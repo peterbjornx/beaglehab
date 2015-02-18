@@ -1,0 +1,6 @@
+*.o
+gpsd/gpsd
+radiod/radiod
+*.a
+*~
+build/*
