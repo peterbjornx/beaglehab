@@ -27,33 +27,9 @@
 /**
  * We need stdint for the unsigned integer type definitions.
  */
-#include <stdint.h>
+#include <hab/csipc.h>
 
-/**
- * IPC channel definitions
- */
-
-#define CS_CHAN_GPS	("gps")
-#define CS_CHAN_ACC	("accelerometer")
-#define CS_CHAN_GYRO	("gyroscope")
-#define CS_CHAN_MAG	("magnetometer")
-#define CS_CHAN_IMU	("interial")
-#define CS_CHAN_AP	("autopilot")
-#define CS_CHAN_BAR	("barometer")
-#define CS_CHAN_HUM	("humidity")
-
-/**
- * Structure describing an IPC channel
- */
-
-typedef struct {
-	mqd_t	mq_handle;
-	int	mq_size;
-	size_t	pl_size;
-	void *	pl_buffer;
-} cs_chan_t;
-
-#endif
+cs_chan_t *
 
 
 
