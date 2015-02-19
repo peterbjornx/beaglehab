@@ -27,8 +27,8 @@
  */
 #include <stdint.h>
 
-#include "csdata.h" 
 #include "csproto.h"
+
 void	csproto_encode_telemetry(csproto_packet_t *packet, const csproto_telemetry_t *telemetry)
 {
 	uint32_t alt_int;

@@ -44,6 +44,11 @@
 #define CS_PREAMBLE_H	(0x55)
 
 /**
+ * 
+ */
+#include <hab/csdata.h> 
+
+/**
  * This structure describes the layout of a downlink packet, it is exactly
  * 30 bytes in length and will take exactly one second to transmit over the
  * 300-8N1 downlink
@@ -73,5 +78,7 @@ typedef struct cspd csproto_packet_t;
 void		csproto_prepare	( csproto_packet_t *packet );
 
 uint16_t	csproto_checksum( void *data, size_t length );
+
+void		csproto_encode_telemetry(csproto_packet_t *packet, const csproto_telemetry_t *telemetry);
 
 #endif
