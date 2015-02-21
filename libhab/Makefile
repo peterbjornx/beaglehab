@@ -34,11 +34,8 @@ ARFLAGS = -cq
 LIBS = 
 
 # define the C source files
-SRCS = main.c \
-	util.c\
-	csproto.c\
-	csdata.c\
-	radio.c
+SRCS = llist.c \
+csipc.c
 
 # define the C object files 
 #

@@ -21,9 +21,6 @@
  * Author:	Peter Bosch <peterbosc@gmail.com>
  */
 
-#ifndef __csipc_h__
-#define __csipc_h__
-
 /**
  * We need stdint for the unsigned integer type definitions.
  */
@@ -44,14 +41,36 @@
  */
 #include <string.h>
 
+/*
+ * Include assert
+ */
+#include <assert.h>
 
 /*
  * Include mqueue for POSIX message queues
  */
 #include <mqueue.h>
 
-cs_chan_t *csipc_open_channel( const char *name )
+/*
+ * Include errno.h for error handling
+ */
+#include <errno.h>
+
+/*
+ * Include errno.h for error handling
+ */
+#include <stddef.h>
+
+char *csipc_listener_name;
+
+void csipc_set_program( const char *name )
 {
+	assert( name != NULL );
+
+	csipc_listener_name = malloc ( strlen ( name ) );
+
+	strcpy ( csipc_listener_name, name );
+
 }
 
 char *csipc_int_generate_chname( const char *name, const char *chan )
@@ -153,6 +172,8 @@ cs_chan_t *csipc_int_open_channel ( const char *server, const char *name )
 
 	status = mq_getattr( channel->mq_handle, &ipc_attr );
 
+	assert (status == 0);
+
 	channel->mq_size   = ipc_attr.mq_maxmsg;
 	channel->pl_size   = (size_t) ipc_attr.mq_msgsize;
 	channel->pl_buffer = malloc ( channel->pl_size );
@@ -180,13 +201,13 @@ int	csipc_int_read_channel( cs_chan_t *channel )
 
 		assert( errno == EAGAIN );
 
-		return FALSE;
+		return 0;
 	
 	} else {
 
 		assert( rd_size == channel->pl_size );
 
-		return TRUE;
+		return 1;
 
 	}
 
@@ -201,23 +222,23 @@ int	csipc_int_write_channel( cs_chan_t *channel )
 	status = mq_send ( channel->mq_handle, 
 			   channel->pl_buffer, 
 			   channel->pl_size,
-			   NULL );
+			   0 );
 
 	if ( status == -1 ) {
 
 		assert( errno == EAGAIN );
 
-		return FALSE;
+		return 0;
 	
 	} else {
 
-		return TRUE;
+		return 1;
 
 	}
 
 }
 
-int  csipc_int_find_listener_iterator( llist _t *node, void *param )
+int  csipc_int_find_listener_iterator( llist_t *node, void *param )
 {
 	const char *name = param;
 	cs_chan_t *channel = (cs_chan_t *) node;
@@ -234,14 +255,42 @@ void csipc_server_add_listener( cs_srv_t *server, const char *name )
 	
 	if ( llist_iterate_select( &( server->ch_listeners ), 
 				   csipc_int_find_listener_iterator,
-				   name ) != NULL ) {
+				   (void *) name ) != NULL ) {
 		return;	
 	}
 	
 	channel = csipc_int_open_channel ( server->ch_name, name );
 
+	if ( channel->pl_size != server->pl_size )
+		return;
+
 	llist_add_end ( &( server->ch_listeners ), (llist_t *) channel );
 
+}
+
+cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
+{
+	cs_chan_t *announce;
+	cs_chan_t *channel;
+
+	assert( name != NULL );
+
+	channel = csipc_int_create_channel ( name, 
+					     csipc_listener_name, 
+					     msg_size, 
+					     max_msg );
+
+	announce = csipc_int_open_channel ( name, 
+					CS_SES_ANNOUNCE );
+	
+	strcpy ( announce->pl_buffer, name );
+	
+	if ( csipc_int_write_channel ( channel ) ) {
+		return channel;		
+	} else {
+		assert( 0 );
+		return channel;
+	}
 }
 
 void csipc_server_process( cs_srv_t *server )
@@ -275,7 +324,24 @@ void csipc_server_process( cs_srv_t *server )
 		
 		listener = (cs_chan_t *) node;
 		
+		memcpy(listener->pl_buffer, server->pl_buffer, server->pl_size);
+
 		csipc_int_write_channel ( listener );
+	}
+		
+}
+
+void csipc_client_process( cs_chan_t *channel )
+{
+	int rd_ctr;
+
+	assert( channel != NULL );
+
+	for ( rd_ctr = 0; rd_ctr < channel->mq_size; rd_ctr++) {
+
+		if ( ! csipc_int_read_channel( channel ) )
+			break;
+			
 	}
 		
 }

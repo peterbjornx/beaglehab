@@ -29,6 +29,22 @@
  */
 #include <stdint.h>
 
+/*
+ * Include llist for linked list functionality
+ */
+#include <hab/llist.h>
+
+/*
+ * Include mqueue for POSIX message queues
+ */
+#include <mqueue.h>
+
+/**
+ * IPC Options
+ */
+
+#define CSIPC_MODE	(666)
+
 /**
  * IPC channel definitions
  */
@@ -69,9 +85,11 @@ typedef struct {
 	void *		pl_buffer;
 } cs_srv_t;
 
-typedef char[128] cs_announce_t;
+cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg );
 
-cs_chan_t *csipc_open_channel(const char *name);
+void csipc_server_process( cs_srv_t *server );
+
+void csipc_client_process( cs_chan_t *channel );
 
 #endif
 
