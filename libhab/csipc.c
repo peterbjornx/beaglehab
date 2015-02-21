@@ -29,7 +29,14 @@
  */
 #include <hab/csipc.h>
 
-cs_chan_t *
+cs_chan_t *csipc_open_channel(const char *name)
+{
+}
+
+void csipc_server_process(cs_srv_t *server)
+{
+	
+}
 
 
 

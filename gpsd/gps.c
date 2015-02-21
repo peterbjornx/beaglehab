@@ -35,6 +35,7 @@ FILE *gps_open(const char *path)
 	p_log(LOG_INFO, "Opening GPS TTY %s\n", path);
 
 	fd = open(path, O_RDWR | O_NOCTTY | O_NDELAY);
+
 	if (fd == -1) {
 		p_log(LOG_ERROR, "Could not open TTY for GPS (%s): %s!\n", path, strerror(errno));
 		exit(EXIT_FAILURE);

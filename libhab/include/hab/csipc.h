@@ -33,6 +33,7 @@
  * IPC channel definitions
  */
 
+#define CS_SES_ANNOUNCE	("announce")
 #define CS_CHAN_GPS	("gps")
 #define CS_CHAN_ACC	("accelerometer")
 #define CS_CHAN_GYRO	("gyroscope")
@@ -47,11 +48,29 @@
  */
 
 typedef struct {
-	mqd_t	mq_handle;
-	int	mq_size;
-	size_t	pl_size;
-	void *	pl_buffer;
+	llist_t 	ll_link;
+	mqd_t		mq_handle;
+	int		mq_size;
+	size_t		pl_size;
+	void *		pl_buffer;
 } cs_chan_t;
+
+/**
+ * Structure describing an IPC listener
+ */
+
+typedef struct {
+	char *		ch_name;
+	cs_chan_t *	ch_announce;
+	llist_t		ch_listeners;
+	int		mq_size;
+	size_t		pl_size;
+	void *		pl_buffer;
+} cs_srv_t;
+
+typedef char[128] cs_announce_t;
+
+cs_chan_t *csipc_open_channel(const char *name);
 
 #endif
 

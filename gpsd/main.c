@@ -38,6 +38,7 @@ union semun {
     struct semid_ds *buf;
     ushort *array;
 };
+
 /*
 ** initsem() -- more-than-inspired by W. Richard Stevens' UNIX Network
 ** Programming 2nd edition, volume 2, lockvsem.c, page 295.
@@ -110,27 +111,33 @@ void gps_shm_open()
 		p_log(LOG_ERROR, "Could not get SHM key: %s!\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+	
 	 /* connect to (and possibly create) the segment: */
 	if ((gps_shm = shmget(key, sizeof(csproto_gps_t), 0644 | IPC_CREAT)) == -1) {
 		p_log(LOG_ERROR, "Could not get SHM segment: %s!\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+
 	if ((key = ftok("/cs_tok", 'g')) == -1) {
 		p_log(LOG_ERROR, "Could not get semaphore key: %s!\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+
 	gpsblock = shmat(gps_shm, (void *)0, 0);
+
 	if (gpsblock == (csproto_gps_t *)(-1)) {
 		p_log(LOG_ERROR, "Could not attach SHM segment: %s!\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	gps_sem = initsem(key, 1);
+
 	if (gps_sem < 0) {
 		p_log(LOG_ERROR, "Could not create semaphore: %s!\n", strerror(errno));
 		exit(EXIT_FAILURE);		
 	}	
 	
 }
+
 void gps_sem_lock(){
 	struct sembuf sb;
 	sb.sem_num = 0;
@@ -141,6 +148,7 @@ void gps_sem_lock(){
 		exit(EXIT_FAILURE);		
 	}
 }
+
 void gps_sem_unlock(){
 	struct sembuf sb;
 	sb.sem_num = 0;
