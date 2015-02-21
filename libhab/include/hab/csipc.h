@@ -49,6 +49,7 @@
 
 typedef struct {
 	llist_t 	ll_link;
+	char *		ls_name;
 	mqd_t		mq_handle;
 	int		mq_size;
 	size_t		pl_size;
