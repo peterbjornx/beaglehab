@@ -3,4 +3,6 @@ gpsd/gpsd
 radiod/radiod
 *.a
 *~
+clitest
+srvtest
 build/*

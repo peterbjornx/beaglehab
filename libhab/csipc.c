@@ -125,7 +125,7 @@ cs_chan_t *csipc_int_create_channel (	const char 	*server,
 	ipc_attr.mq_curmsgs = 0;
 
 	channel->mq_handle = mq_open (	ipc_name, 
-					O_RDONLY | O_NONBLOCK | O_CREAT,
+					O_RDWR | O_NONBLOCK | O_CREAT,
 					CSIPC_MODE,
 					&ipc_attr );
 
@@ -166,7 +166,7 @@ cs_chan_t *csipc_int_open_channel ( const char *server, const char *name )
 	ipc_name = csipc_int_generate_chname ( server, name );
 
 	channel->mq_handle = mq_open (	ipc_name, 
-					O_RDONLY | O_NONBLOCK );
+					O_RDWR | O_NONBLOCK );
 
 	assert( channel->mq_handle != ( mqd_t ) -1 );
 
@@ -222,7 +222,7 @@ int	csipc_int_write_channel( cs_chan_t *channel )
 	status = mq_send ( channel->mq_handle, 
 			   channel->pl_buffer, 
 			   channel->pl_size,
-			   0 );
+			   2 );
 
 	if ( status == -1 ) {
 
@@ -320,9 +320,9 @@ cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
 	announce = csipc_int_open_channel ( name, 
 					CS_SES_ANNOUNCE );
 	
-	strcpy ( announce->pl_buffer, name );
+	strcpy ( announce->pl_buffer, csipc_listener_name );
 	
-	if ( csipc_int_write_channel ( channel ) ) {
+	if ( csipc_int_write_channel ( announce ) ) {
 		return channel;		
 	} else {
 		assert( 0 );
@@ -355,7 +355,7 @@ void csipc_server_process( cs_srv_t *server )
 			
 	}	
 
-	for ( 	node = &( server->ch_listeners ); 
+	for ( 	node = server->ch_listeners.next; 
 		node != &( server->ch_listeners );
 		node = node->next ) {
 		
@@ -363,7 +363,19 @@ void csipc_server_process( cs_srv_t *server )
 		
 		memcpy(listener->pl_buffer, server->pl_buffer, server->pl_size);
 
-		csipc_int_write_channel ( listener );
+		if ( ! csipc_int_write_channel ( listener ) ) {
+	
+			if ( listener->mq_size >= 2 ) {
+				
+				csipc_int_read_channel  ( listener );
+		
+				memcpy(listener->pl_buffer, server->pl_buffer, server->pl_size);
+
+				csipc_int_write_channel ( listener );
+
+			}
+		
+		}
 	}
 		
 }

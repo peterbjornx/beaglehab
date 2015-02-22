@@ -43,9 +43,9 @@
  * IPC Options
  */
 
-#define CSIPC_MODE		(666)
+#define CSIPC_MODE		(0666)
 #define CSIPC_ANNOUNCE_SIZE	(256)
-#define CSIPC_ANNOUNCE_MAXMSG	(32)
+#define CSIPC_ANNOUNCE_MAXMSG	(10)
 
 /**
  * IPC channel definitions
