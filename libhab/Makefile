@@ -50,6 +50,7 @@ OBJS = $(SRCS:.c=.o)
 all:	libhab.a
 
 libhab.a: $(OBJS)
+	@touch libhab.a
 	@rm libhab.a
 	$(AR) $(ARFLAGS) libhab.a $(OBJS)
 

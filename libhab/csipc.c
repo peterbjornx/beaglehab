@@ -175,7 +175,7 @@ cs_chan_t *csipc_int_open_channel ( const char *server, const char *name )
 	ipc_name = csipc_int_generate_chname ( server, name );
 
 	channel->mq_handle = mq_open (	ipc_name, 
-					O_RDWR | O_NONBLOCK );
+					O_RDWR | O_NONBLOCK | O_CREAT );
 
 	cserror( channel->mq_handle != ( mqd_t ) -1, LOG_ERROR, 
 		"Error opening mqueue: %i (%s)", errno, strerror(errno) );
@@ -274,7 +274,7 @@ void csipc_server_add_listener( cs_srv_t *server, const char *name )
 	if ( llist_iterate_select( &( server->ch_listeners ), 
 				   csipc_int_find_listener_iterator,
 				   (void *) name ) != NULL ) {
-		cs_log(LOG_INFO, "IPC client %s has reconnected: ", name);
+		cs_log(LOG_INFO, "IPC client %s has reconnected", name);
 		return;	
 	}
 	
@@ -289,7 +289,7 @@ void csipc_server_add_listener( cs_srv_t *server, const char *name )
 
 	llist_add_end ( &( server->ch_listeners ), (llist_t *) channel );
 	
-	cs_log(LOG_INFO, "IPC client %s has connected: ", name);
+	cs_log(LOG_INFO, "IPC client %s has connected", name);
 
 }
 
