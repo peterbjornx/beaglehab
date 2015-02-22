@@ -161,7 +161,46 @@ int pm_kill_process ( wd_proc_t *process )
 	/* Check for NULL pointers */
 	csassert( process != NULL );
 
-	
+	/* Check whether process currenly runs to prevent killing the pgrp */
+	if ( process->pid == 0 )
+		/* Process was not running, return false to indicate failure */
+		return 0;
+
+	/* Send SIGKILL to the process */
+	if ( kill ( process->pid, SIGKILL ) == -1 ) {
+		
+		/* Failed to send the signal */
+
+		/* Handle errors */
+		if ( errno == ESRCH ) {
+			
+			/* The process is already dead */
+			cs_log (LOG_WARN, 
+				"Failed to kill %s: process died", 
+				process->name);
+
+			/* We were not successful but the process is gone */
+			/* anyway so return true to indicate success */
+			return 1;
+		} else {
+			
+			/* We could not kill the process and it still lives */
+			cs_log (LOG_ERROR, 
+				"Failed to kill %s: %i(%s)", 
+				errno,
+				strerror( errno ));
+			
+			/* Note: we are in SERIOUS trouble here: a process */
+			/* froze but could not be killed and restarted! */		
+
+			/* Return false to indicate failure */
+			return 0;
+		}
+
+	}
+
+	/* Return true to indicate success */
+	return 1;
 
 }
 
