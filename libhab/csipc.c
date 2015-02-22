@@ -67,7 +67,7 @@ void csipc_set_program( const char *name )
 {
 	assert( name != NULL );
 
-	csipc_listener_name = malloc ( strlen ( name ) );
+	csipc_listener_name = malloc ( strlen ( name ) + 1 );
 
 	strcpy ( csipc_listener_name, name );
 
@@ -111,7 +111,7 @@ cs_chan_t *csipc_int_create_channel (	const char 	*server,
 	
 	assert( channel != NULL );
 
-	channel->ls_name = malloc ( strlen ( name ) );
+	channel->ls_name = malloc ( strlen ( name ) + 1 );
 	
 	assert( channel->ls_name != NULL);
 	
@@ -157,7 +157,7 @@ cs_chan_t *csipc_int_open_channel ( const char *server, const char *name )
 	
 	assert( channel != NULL );
 
-	channel->ls_name = malloc ( strlen ( name ) );
+	channel->ls_name = malloc ( strlen ( name ) + 1 );
 	
 	assert( channel->ls_name != NULL);
 	
@@ -266,6 +266,43 @@ void csipc_server_add_listener( cs_srv_t *server, const char *name )
 
 	llist_add_end ( &( server->ch_listeners ), (llist_t *) channel );
 
+}
+
+cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg )
+{
+	cs_srv_t *server;
+
+	assert( name != NULL );
+
+	server = malloc ( sizeof ( cs_srv_t ) );
+	
+	assert( server != NULL );
+
+	server->ch_name = malloc ( strlen ( name ) + 1 );
+	
+	assert( server->ch_name != NULL );
+	
+	strcpy ( server->ch_name, name );
+
+	server->ch_announce = csipc_int_create_channel (name, 
+							CS_SES_ANNOUNCE,
+							CSIPC_ANNOUNCE_SIZE,
+							CSIPC_ANNOUNCE_MAXMSG);
+
+	assert( server->ch_announce != NULL );
+	
+	llist_create ( &( server->ch_listeners ) );
+	
+	server->mq_size = max_msg;
+	
+	server->pl_size = msg_size;
+
+	server->pl_buffer = malloc ( server->pl_size );
+
+	assert( server->pl_buffer != NULL );
+
+	return server;
+	
 }
 
 cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )

@@ -43,7 +43,9 @@
  * IPC Options
  */
 
-#define CSIPC_MODE	(666)
+#define CSIPC_MODE		(666)
+#define CSIPC_ANNOUNCE_SIZE	(256)
+#define CSIPC_ANNOUNCE_MAXMSG	(32)
 
 /**
  * IPC channel definitions
@@ -73,7 +75,7 @@ typedef struct {
 } cs_chan_t;
 
 /**
- * Structure describing an IPC listener
+ * Structure describing an IPC server
  */
 
 typedef struct {
@@ -85,7 +87,11 @@ typedef struct {
 	void *		pl_buffer;
 } cs_srv_t;
 
+void csipc_set_program( const char *name );
+
 cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg );
+
+cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg );
 
 void csipc_server_process( cs_srv_t *server );
 
