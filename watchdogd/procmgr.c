@@ -225,7 +225,7 @@ void pm_request_respawn ( wd_proc_t *process )
 
 } 
 
-void pm_request_kill ( wd_proc_t *process )
+void pm_request_kill ( wd_proc_t *process, int action )
 {
 	wd_kill_t	*request;
 	
@@ -240,6 +240,7 @@ void pm_request_kill ( wd_proc_t *process )
 	
 	/* Fill its fields */
 	request->process = process;
+	request->action  = action;
 	
 	/* Append it to the queue */
 	llist_add_end ( &pm_kill_queue, ( llist_t * ) request );
@@ -362,7 +363,7 @@ void pm_process_watchdog ( void )
 			process->freeze_count++;
 
 			/* Add process to kill queue */			
-			pm_request_kill ( process );
+			pm_request_kill ( process, WD_RESPAWN );
 									
 			/* Log this event */
 			cs_log( LOG_INFO, 
@@ -437,10 +438,18 @@ void pm_process_kills ( void )
 			"Killing frozen child %s",
 			process->name );
 		
-		/* Try to respawn it */
-		if ( pm_kill_process( request->process ) ) {
+		/* Try to kill it */
+		if ( pm_kill_process( request->process, WD_RESPAWN ) ) {
 		
-			/* Respawn was successful */
+			/* Kill was successful */
+
+			/* Do we need to respawn this process? */
+			if ( request->action == WD_RESPAWN ) {
+	
+				/* Request respawn */
+				pm_request_respawn ( request->process );
+			
+			}
 
 			/* Remove this request from the queue */
 			llist_unlink ( ( llist_t * ) request );
@@ -450,7 +459,7 @@ void pm_process_kills ( void )
 
 		} else {
 
-			/* Respawn failed */
+			/* Kill failed */
 									
 			/* Log this event */
 			cs_log( LOG_INFO, 

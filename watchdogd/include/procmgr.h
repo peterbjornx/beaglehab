@@ -40,6 +40,10 @@
 #include <time.h>
 
 
+/* Definitions for the action parameter of pm_request_kill */
+#define WD_RESPAWN	(1)
+#define WD_KILL		(0)
+
 typedef struct {
 
 	/* Linked list node */
@@ -77,8 +81,11 @@ typedef struct {
 	/* Linked list node */
 	llist_t		 node;
 
-	/* Process to respawn */
+	/* Process to kill */
 	wd_proc_t	*process;
+
+	/* Action to be taken after kill */
+	int 		 action;
 
 } wd_kill_t;
 
