@@ -61,6 +61,16 @@
  */
 #include <time.h>
 
+/*
+ * We need unistd for the process management functions
+ */
+#include <unistd.h>
+
+/*
+ * We need signal for the kill function
+ */
+#include <unistd.h>
+
 llist_t pm_process_list;
 
 llist_t pm_respawn_queue;
@@ -80,6 +90,79 @@ wd_proc_t *pm_get_process( pid_t pid )
 	return ( wd_proc_t * ) llist_iterate_select ( &pm_process_list, 
 						      &pm_get_process_iterator,
 						      &pid );
+}
+
+int pm_spawn_process ( wd_proc_t *process )
+{
+	pid_t	pid;
+
+	/* Check for NULL pointers */
+	csassert( process != NULL );
+
+	/* Log what we are doing */
+	cs_log( LOG_INFO, "Spawning %s", process->name );
+
+	/* Fork */
+	pid = fork ( );
+
+	/* Check whether fork failed */
+	if ( pid == -1 ) {
+
+		/* Log this event */
+		cs_log(	LOG_ERROR,
+			"Could not fork: %i(%s)", 
+			errno, 
+			strerror( errno ) );
+
+		/* Return false to indicate failure */
+		return 0;
+	}
+
+	/* Check whether we are parent or child */
+	if ( pid == 0 ) {
+
+		/* We are the child, proceed to execute process */	
+		if ( execv ( process->path, process->args ) == -1 ) {
+			
+			/* Exec failed */
+
+			/* Log this event */
+			cs_log(	LOG_ERROR,
+				"Could not execv: %i(%s)", 
+				errno, 
+				strerror( errno ) );
+			
+			/* Exit */
+			_exit ( 127 );
+
+			/* Never reached but we need to appease the compiler */
+			return 0;
+		}	
+			
+		/* Never reached but we need to appease the compiler */
+		return 1;
+		
+	} else {
+	
+		/* We are the parent, save the pid */
+		process->pid = pid;
+
+		/* Fork was successful, if exec fails we will find out through*/
+		/* waitpid */
+		
+		/* Return true to indicate success */
+		return 1;
+	}
+}
+
+int pm_kill_process ( wd_proc_t *process )
+{
+
+	/* Check for NULL pointers */
+	csassert( process != NULL );
+
+	
+
 }
 
 void pm_request_respawn ( wd_proc_t *process )
