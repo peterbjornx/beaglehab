@@ -35,7 +35,8 @@ LIBS =
 
 # define the C source files
 SRCS = llist.c \
-csipc.c
+csipc.c \
+log.c
 
 # define the C object files 
 #
@@ -49,6 +50,7 @@ OBJS = $(SRCS:.c=.o)
 all:	libhab.a
 
 libhab.a: $(OBJS)
+	@rm libhab.a
 	$(AR) $(ARFLAGS) libhab.a $(OBJS)
 
 .PHONY: depend clean
