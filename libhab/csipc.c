@@ -336,7 +336,6 @@ cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg )
 
 cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
 {
-	cs_chan_t *announce;
 	cs_chan_t *channel;
 
 	csassert( name != NULL );
@@ -346,12 +345,12 @@ cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
 					     msg_size, 
 					     max_msg );
 
-	announce = csipc_int_open_channel ( name, 
+	channel->ch_announce = csipc_int_open_channel ( name, 
 					CS_SES_ANNOUNCE );
 	
-	strcpy ( announce->pl_buffer, csipc_listener_name );
+	strcpy ( channel->ch_announce->pl_buffer, csipc_listener_name );
 	
-	if ( csipc_int_write_channel ( announce ) ) {
+	if ( csipc_int_write_channel ( channel->ch_announce ) ) {
 		return channel;		
 	} else {
 		cs_log_fatal(	LOG_ERROR, 
@@ -415,15 +414,33 @@ void csipc_server_process( cs_srv_t *server )
 
 void csipc_client_process( cs_chan_t *channel )
 {
-	int rd_ctr;
+	int	rd_ctr;
+	time_t	timenow;
 
 	csassert( channel != NULL );
+
+	time ( &timenow );
 
 	for ( rd_ctr = 0; rd_ctr < channel->mq_size; rd_ctr++) {
 
 		if ( ! csipc_int_read_channel( channel ) )
 			break;
 			
+		channel->ch_lastupd = timenow;
+
+	}
+	
+	if ( difftime(timenow, channel->ch_lastupd) > CSIPC_UPDATE_TIMEOUT ) {
+		
+		channel->ch_lastupd = timenow + CSIPC_ANNOUNCE_TIMEOUT;
+
+		strcpy ( channel->ch_announce->pl_buffer, csipc_listener_name );
+	
+		if ( ! csipc_int_write_channel ( channel->ch_announce ) ) {
+			cs_log_fatal(	LOG_ERROR, 
+		"Failed to write to announce channel ( for reannounce )" );
+		}
+
 	}
 		
 }

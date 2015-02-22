@@ -39,6 +39,11 @@
  */
 #include <mqueue.h>
 
+/*
+ * Include time for timeouts
+ */
+#include <time.h>
+
 /**
  * IPC Options
  */
@@ -46,6 +51,8 @@
 #define CSIPC_MODE		(0666)
 #define CSIPC_ANNOUNCE_SIZE	(256)
 #define CSIPC_ANNOUNCE_MAXMSG	(10)
+#define CSIPC_UPDATE_TIMEOUT	(2)
+#define CSIPC_ANNOUNCE_TIMEOUT	(30)
 
 /**
  * IPC channel definitions
@@ -64,15 +71,18 @@
 /**
  * Structure describing an IPC channel
  */
+typedef struct cs_chan cs_chan_t;
 
-typedef struct {
+struct cs_chan {
 	llist_t 	ll_link;
 	char *		ls_name;
 	mqd_t		mq_handle;
 	int		mq_size;
 	size_t		pl_size;
 	void *		pl_buffer;
-} cs_chan_t;
+	time_t		ch_lastupd;
+	cs_chan_t *	ch_announce;
+};
 
 /**
  * Structure describing an IPC server
