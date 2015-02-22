@@ -42,6 +42,11 @@
 #include <time.h>
 
 /*
+ * We need hab/cslog for the log levels
+ */
+#include <hab/cslog.h>
+
+/*
  * ANSI Colour escape sequences
  */
 #define KNRM  "\x1B[0m"
@@ -103,7 +108,7 @@ void cs_log ( int level, const char *format, ...)
 	va_list args;
 
 	/* Check whether we should display this message */
-	if (level < log_level)
+	if (level < cs_log_level)
 		return;
 
 	/* Initialize varargs */
@@ -141,7 +146,7 @@ void cs_log_fatal ( int level, const char *format, ...)
 	va_list args;
 
 	/* Check whether we should display this message */
-	if (level < log_level)
+	if (level < cs_log_level)
 		exit(EXIT_FAILURE);
 
 	/* Initialize varargs */
