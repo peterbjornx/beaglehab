@@ -101,6 +101,11 @@ void csipc_set_program( const char *name );
 
 cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg );
 
+cs_chan_t *csipc_open_channel_zerocopy( const char 	*name, 
+					void		*buffer,
+					size_t 		 msg_size, 
+					int 		 max_msg );
+
 cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg );
 
 void csipc_server_process( cs_srv_t *server );

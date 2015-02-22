@@ -96,10 +96,11 @@ char *csipc_int_generate_chname( const char *name, const char *chan )
 
 }
 
-cs_chan_t *csipc_int_create_channel (	const char 	*server, 
-					const char 	*name, 
-					size_t 		 msg_size, 
-					int 		 max_msg )
+cs_chan_t *csipc_int_create_channel_zerocopy (	const char 	*server, 
+						const char 	*name, 
+						void		*buffer,
+						size_t 		 msg_size, 
+						int 		 max_msg )
 {
 
 	cs_chan_t *channel;
@@ -108,6 +109,7 @@ cs_chan_t *csipc_int_create_channel (	const char 	*server,
 
 	csassert( server != NULL );
 	csassert( name != NULL );
+	csassert( buffer != NULL );
 
 	channel = malloc ( sizeof (cs_chan_t) );
 	
@@ -138,10 +140,86 @@ cs_chan_t *csipc_int_create_channel (	const char 	*server,
 
 	channel->mq_size   = ipc_attr.mq_maxmsg;
 	channel->pl_size   = (size_t) ipc_attr.mq_msgsize;
-	channel->pl_buffer = malloc ( channel->pl_size );
+	channel->pl_buffer = buffer;
+		
+	free ( ipc_name );
+
+	return channel;
+
+}
+
+
+cs_chan_t *csipc_int_create_channel (	const char 	*server, 
+					const char 	*name, 
+					size_t 		 msg_size, 
+					int 		 max_msg )
+{
+
+	void *buffer;
+
+	csassert( server != NULL );
+	csassert( name != NULL );
+
+	buffer = malloc ( msg_size );
 	
-	cserror( channel->pl_buffer != NULL, LOG_ERROR,
+	cserror( buffer != NULL, LOG_ERROR,
 		"Ran out of memory allocating channel buffer" );
+		
+	return csipc_int_create_channel_zerocopy ( 	server, 
+							name, 
+							buffer, 
+							msg_size, 
+							max_msg);
+
+}
+
+
+cs_chan_t *csipc_int_open_channel_zerocopy ( 	const char *server, 
+						const char *name,
+						void	   *buffer,
+						size_t	    buffer_size )
+{
+	int status;
+	cs_chan_t *channel;
+	char *ipc_name;
+	struct mq_attr ipc_attr;
+
+	csassert( server != NULL );
+	csassert( name != NULL );
+	csassert( buffer != NULL );
+
+	channel = malloc ( sizeof (cs_chan_t) );
+	
+	cserror( channel != NULL, LOG_ERROR, 
+		"Ran out of memory allocating channel" );
+
+	channel->ls_name = malloc ( strlen ( name ) + 1 );
+	
+	cserror( channel->ls_name != NULL, LOG_ERROR, 
+		"Ran out of memory allocating channel name" );
+	
+	strcpy ( channel->ls_name, name );
+	
+	ipc_name = csipc_int_generate_chname ( server, name );
+
+	channel->mq_handle = mq_open (	ipc_name, 
+					O_RDWR | O_NONBLOCK | O_CREAT );
+
+	cserror( channel->mq_handle != ( mqd_t ) -1, LOG_ERROR, 
+		"Error opening mqueue: %i (%s)", errno, strerror(errno) );
+
+	status = mq_getattr( channel->mq_handle, &ipc_attr );
+
+	cserror( status == 0, LOG_ERROR, 
+		"Error getting mqueue attributes: %i (%s)", 
+		errno, strerror(errno) );
+
+	channel->mq_size   = ipc_attr.mq_maxmsg;
+	channel->pl_size   = (size_t) ipc_attr.mq_msgsize;
+	channel->pl_buffer = buffer;
+	
+	cserror( buffer_size == channel->pl_size , LOG_ERROR,
+		"Mismatched channel buffer size" );
 		
 	free ( ipc_name );
 
@@ -332,6 +410,35 @@ cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg )
 
 	return server;
 	
+}
+
+cs_chan_t *csipc_open_channel_zerocopy( const char 	*name, 
+					void		*buffer,
+					size_t 		 msg_size, 
+					int 		 max_msg )
+{
+	cs_chan_t *channel;
+
+	csassert( name != NULL );
+	csassert( buffer != NULL );
+
+	channel = csipc_int_create_channel_zerocopy ( 	name, 
+					     		csipc_listener_name, 
+							buffer,
+					     		msg_size, 
+					     		max_msg );
+
+	channel->ch_announce = csipc_int_open_channel ( name, CS_SES_ANNOUNCE );
+	
+	strcpy ( channel->ch_announce->pl_buffer, csipc_listener_name );
+	
+	if ( csipc_int_write_channel ( channel->ch_announce ) ) {
+		return channel;		
+	} else {
+		cs_log_fatal(	LOG_ERROR, 
+				"Failed to write to announce channel" );
+		return channel;
+	}
 }
 
 cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
