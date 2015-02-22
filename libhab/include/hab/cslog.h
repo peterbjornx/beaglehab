@@ -55,9 +55,9 @@ void cs_log_fatal ( int level, const char *format, ...);
 		"assertion %s failed at %s:%s", #CoNd , __FILE__, __LINE__); \
 			} while (0)
 
-#define cserror(CoNd, LeVeL, FoRmAt, ...) do { if ( CoNd ) \
-						cs_log_fatal((LeVeL),(FoRmAt), \
-								__VA_ARGS__); \
+#define cserror(CoNd, LeVeL, FoRmAt, ... ) do { if ( !(CoNd) ) \
+						cs_log_fatal((LeVeL),(FoRmAt) \
+							, ##__VA_ARGS__); \
 					   } while (0)
 
 #endif

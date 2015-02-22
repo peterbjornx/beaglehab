@@ -42,9 +42,9 @@
 #include <string.h>
 
 /*
- * Include assert
+ * Include logging functionality
  */
-#include <assert.h>
+#include <hab/cslog.h>
 
 /*
  * Include mqueue for POSIX message queues
@@ -57,7 +57,7 @@
 #include <errno.h>
 
 /*
- * Include errno.h for error handling
+ * Include stddef.h for type defs
  */
 #include <stddef.h>
 
@@ -65,7 +65,7 @@ char *csipc_listener_name;
 
 void csipc_set_program( const char *name )
 {
-	assert( name != NULL );
+	csassert( name != NULL );
 
 	csipc_listener_name = malloc ( strlen ( name ) + 1 );
 
@@ -79,12 +79,14 @@ char *csipc_int_generate_chname( const char *name, const char *chan )
 	char *ipc_name;
 	size_t length;
 
-	assert( name != NULL );
-	assert( chan != NULL );
+	csassert( name != NULL );
+	csassert( chan != NULL );
 
 	length = 1 + strlen ( name ) + 1 + strlen ( chan ) + 1;
 
-	assert( length <  256 );
+	cserror( length <  256, LOG_ERROR, 
+		"Tried to generate channel name longer (%i) than 256 characters"
+		, length );
 
 	ipc_name = malloc ( length );
 
@@ -104,16 +106,18 @@ cs_chan_t *csipc_int_create_channel (	const char 	*server,
 	char *ipc_name;
 	struct mq_attr ipc_attr;
 
-	assert( server != NULL );
-	assert( name != NULL );
+	csassert( server != NULL );
+	csassert( name != NULL );
 
 	channel = malloc ( sizeof (cs_chan_t) );
 	
-	assert( channel != NULL );
+	cserror( channel != NULL, LOG_ERROR, 
+		"Ran out of memory allocating channel" );
 
 	channel->ls_name = malloc ( strlen ( name ) + 1 );
 	
-	assert( channel->ls_name != NULL);
+	cserror( channel->ls_name != NULL, LOG_ERROR, 
+		"Ran out of memory allocating channel name" );
 	
 	strcpy ( channel->ls_name, name );
 	
@@ -129,19 +133,22 @@ cs_chan_t *csipc_int_create_channel (	const char 	*server,
 					CSIPC_MODE,
 					&ipc_attr );
 
-	assert( channel->mq_handle != ( mqd_t ) -1 );
+	cserror( channel->mq_handle != ( mqd_t ) -1, LOG_ERROR, 
+		"Error creating mqueue: %i (%s)", errno, strerror(errno) );
 
 	channel->mq_size   = ipc_attr.mq_maxmsg;
 	channel->pl_size   = (size_t) ipc_attr.mq_msgsize;
 	channel->pl_buffer = malloc ( channel->pl_size );
 	
-	assert( channel->pl_buffer != NULL );
+	cserror( channel->pl_buffer != NULL, LOG_ERROR,
+		"Ran out of memory allocating channel buffer" );
 		
 	free ( ipc_name );
 
 	return channel;
 
 }
+
 
 cs_chan_t *csipc_int_open_channel ( const char *server, const char *name )
 {
@@ -150,16 +157,18 @@ cs_chan_t *csipc_int_open_channel ( const char *server, const char *name )
 	char *ipc_name;
 	struct mq_attr ipc_attr;
 
-	assert( server != NULL );
-	assert( name != NULL );
+	csassert( server != NULL );
+	csassert( name != NULL );
 
 	channel = malloc ( sizeof (cs_chan_t) );
 	
-	assert( channel != NULL );
+	cserror( channel != NULL, LOG_ERROR, 
+		"Ran out of memory allocating channel" );
 
 	channel->ls_name = malloc ( strlen ( name ) + 1 );
 	
-	assert( channel->ls_name != NULL);
+	cserror( channel->ls_name != NULL, LOG_ERROR, 
+		"Ran out of memory allocating channel name" );
 	
 	strcpy ( channel->ls_name, name );
 	
@@ -168,17 +177,21 @@ cs_chan_t *csipc_int_open_channel ( const char *server, const char *name )
 	channel->mq_handle = mq_open (	ipc_name, 
 					O_RDWR | O_NONBLOCK );
 
-	assert( channel->mq_handle != ( mqd_t ) -1 );
+	cserror( channel->mq_handle != ( mqd_t ) -1, LOG_ERROR, 
+		"Error opening mqueue: %i (%s)", errno, strerror(errno) );
 
 	status = mq_getattr( channel->mq_handle, &ipc_attr );
 
-	assert (status == 0);
+	cserror( status == 0, LOG_ERROR, 
+		"Error getting mqueue attributes: %i (%s)", 
+		errno, strerror(errno) );
 
 	channel->mq_size   = ipc_attr.mq_maxmsg;
 	channel->pl_size   = (size_t) ipc_attr.mq_msgsize;
 	channel->pl_buffer = malloc ( channel->pl_size );
 	
-	assert( channel->pl_buffer != NULL );
+	cserror( channel->pl_buffer != NULL , LOG_ERROR,
+		"Ran out of memory allocating channel buffer" );
 		
 	free ( ipc_name );
 
@@ -190,7 +203,7 @@ int	csipc_int_read_channel( cs_chan_t *channel )
 {
 	ssize_t rd_size;
 
-	assert( channel != NULL );
+	csassert( channel != NULL );
 	
 	rd_size = mq_receive (  channel->mq_handle, 
 				channel->pl_buffer, 
@@ -199,13 +212,16 @@ int	csipc_int_read_channel( cs_chan_t *channel )
 
 	if ( rd_size == -1 ) {
 
-		assert( errno == EAGAIN );
+		cserror( errno == EAGAIN, LOG_ERROR, 
+			"Error reading from channel: %i (%s)", 
+			errno, strerror(errno) );
 
 		return 0;
 	
 	} else {
 
-		assert( rd_size == channel->pl_size );
+		cserror( rd_size == channel->pl_size, LOG_ERROR, 
+			"Incomplete read from channel" );
 
 		return 1;
 
@@ -217,7 +233,7 @@ int	csipc_int_write_channel( cs_chan_t *channel )
 {
 	int status;
 
-	assert( channel != NULL );
+	csassert( channel != NULL );
 	
 	status = mq_send ( channel->mq_handle, 
 			   channel->pl_buffer, 
@@ -226,7 +242,9 @@ int	csipc_int_write_channel( cs_chan_t *channel )
 
 	if ( status == -1 ) {
 
-		assert( errno == EAGAIN );
+		cserror( errno == EAGAIN, LOG_ERROR, 
+			"Error writing to channel: %i (%s)", 
+			errno, strerror(errno) );
 
 		return 0;
 	
@@ -250,21 +268,28 @@ void csipc_server_add_listener( cs_srv_t *server, const char *name )
 {
 	cs_chan_t *channel;
 
-	assert( server != NULL );
-	assert( name != NULL );
+	csassert( server != NULL );
+	csassert( name != NULL );
 	
 	if ( llist_iterate_select( &( server->ch_listeners ), 
 				   csipc_int_find_listener_iterator,
 				   (void *) name ) != NULL ) {
+		cs_log(LOG_INFO, "IPC client %s has reconnected: ", name);
 		return;	
 	}
 	
 	channel = csipc_int_open_channel ( server->ch_name, name );
 
-	if ( channel->pl_size != server->pl_size )
+	if ( channel->pl_size != server->pl_size ) {
+		cs_log( LOG_WARN, 
+		"IPC client %s tried to connect with invalid payload size %i",
+		 name, channel->pl_size );
 		return;
+	}
 
 	llist_add_end ( &( server->ch_listeners ), (llist_t *) channel );
+	
+	cs_log(LOG_INFO, "IPC client %s has connected: ", name);
 
 }
 
@@ -272,15 +297,17 @@ cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg )
 {
 	cs_srv_t *server;
 
-	assert( name != NULL );
+	csassert( name != NULL );
 
 	server = malloc ( sizeof ( cs_srv_t ) );
 	
-	assert( server != NULL );
+	cserror( server != NULL, LOG_ERROR, 
+		"Ran out of memory allocating server" );
 
 	server->ch_name = malloc ( strlen ( name ) + 1 );
 	
-	assert( server->ch_name != NULL );
+	cserror( server->ch_name != NULL, LOG_ERROR, 
+		"Ran out of memory allocating server name" );
 	
 	strcpy ( server->ch_name, name );
 
@@ -288,8 +315,9 @@ cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg )
 							CS_SES_ANNOUNCE,
 							CSIPC_ANNOUNCE_SIZE,
 							CSIPC_ANNOUNCE_MAXMSG);
-
-	assert( server->ch_announce != NULL );
+	
+	cserror( server->ch_announce != NULL, LOG_ERROR, 
+		"Failed to create announce channel" );
 	
 	llist_create ( &( server->ch_listeners ) );
 	
@@ -298,8 +326,9 @@ cs_srv_t *csipc_create_server( const char *name, size_t msg_size, int max_msg )
 	server->pl_size = msg_size;
 
 	server->pl_buffer = malloc ( server->pl_size );
-
-	assert( server->pl_buffer != NULL );
+	
+	cserror( server->pl_buffer != NULL, LOG_ERROR, 
+		"Ran out of memory allocating server buffer" );
 
 	return server;
 	
@@ -310,7 +339,7 @@ cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
 	cs_chan_t *announce;
 	cs_chan_t *channel;
 
-	assert( name != NULL );
+	csassert( name != NULL );
 
 	channel = csipc_int_create_channel ( name, 
 					     csipc_listener_name, 
@@ -325,7 +354,8 @@ cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
 	if ( csipc_int_write_channel ( announce ) ) {
 		return channel;		
 	} else {
-		assert( 0 );
+		cs_log_fatal(	LOG_ERROR, 
+				"Failed to write to announce channel" );
 		return channel;
 	}
 }
@@ -337,7 +367,7 @@ void csipc_server_process( cs_srv_t *server )
 	llist_t *node;
 	cs_chan_t *listener;
 
-	assert( server != NULL );
+	csassert( server != NULL );
 
 	for ( rd_ctr = 0; rd_ctr < server->ch_announce->mq_size; rd_ctr++) {
 
@@ -347,8 +377,11 @@ void csipc_server_process( cs_srv_t *server )
 		announce_size = strnlen ( server->ch_announce->pl_buffer,
 					  server->ch_announce->pl_size );
 		
-		if ( announce_size == server->ch_announce->pl_size )
+		if ( announce_size == server->ch_announce->pl_size ) {
+			cs_log( LOG_WARN, 
+			 "IPC client tried to connect with unterminated name" );
 			continue;
+		}
 
 		csipc_server_add_listener ( server, 
 					    server->ch_announce->pl_buffer );
@@ -384,7 +417,7 @@ void csipc_client_process( cs_chan_t *channel )
 {
 	int rd_ctr;
 
-	assert( channel != NULL );
+	csassert( channel != NULL );
 
 	for ( rd_ctr = 0; rd_ctr < channel->mq_size; rd_ctr++) {
 

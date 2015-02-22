@@ -129,6 +129,9 @@ void cs_log ( int level, const char *format, ...)
 	/* Print the message */
 	vfprintf ( stderr, format, args );
 
+	/* Print newline */
+	fprintf( stderr, "\n" );
+
 	/* Release varargs */
  	va_end ( args );
 } 
@@ -166,6 +169,9 @@ void cs_log_fatal ( int level, const char *format, ...)
 	
 	/* Print the message */
 	vfprintf ( stderr, format, args );
+
+	/* Print newline */
+	fprintf( stderr, "\n" );
 
 	/* Release varargs */
  	va_end ( args );
