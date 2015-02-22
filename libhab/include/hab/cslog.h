@@ -51,7 +51,11 @@ void cs_log ( int level, const char *format, ...);
  */
 void cs_log_fatal ( int level, const char *format, ...);
 
-#define csassert(CoNd, LeVeL, FoRmAt, ...) do { if ( CoNd ) \
+#define csassert(CoNd) do { if ( !(CoNd) ) cs_log_fatal(LOG_ERROR, \
+		"assertion %s failed at %s:%s", #CoNd , __FILE__, __LINE__); \
+			} while (0)
+
+#define cserror(CoNd, LeVeL, FoRmAt, ...) do { if ( CoNd ) \
 						cs_log_fatal((LeVeL),(FoRmAt), \
 								__VA_ARGS__); \
 					   } while (0)
