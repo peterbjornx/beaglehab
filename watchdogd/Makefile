@@ -34,7 +34,8 @@ LIBS = -lhab -lrt
 
 # define the C source files
 SRCS = main.c \
-procmgr.c
+procmgr.c \
+wdipc.c
 
 # define the C object files 
 #

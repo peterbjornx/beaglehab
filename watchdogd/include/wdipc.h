@@ -24,7 +24,7 @@
 #ifndef __wdipc_h__
 #define __wdipc_h__
 
-int wdipc_initialize ( void );
+void wdipc_initialize ( void );
 
 void wdipc_process ( void );
 

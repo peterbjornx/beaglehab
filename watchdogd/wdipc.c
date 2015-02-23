@@ -78,7 +78,7 @@
 
 int wdipc_mqueue_handle;
 
-int wdipc_initialize ( void )
+void wdipc_initialize ( void )
 {
 	key_t key;
 

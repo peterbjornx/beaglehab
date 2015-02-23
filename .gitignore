@@ -1,6 +1,7 @@
 *.o
 gpsd/gpsd
 radiod/radiod
+watchdogd/watchdogd
 *.a
 *~
 clitest

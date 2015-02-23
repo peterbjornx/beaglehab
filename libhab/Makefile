@@ -36,7 +36,8 @@ LIBS =
 # define the C source files
 SRCS = llist.c \
 csipc.c \
-log.c
+log.c \
+wdog.c
 
 # define the C object files 
 #
