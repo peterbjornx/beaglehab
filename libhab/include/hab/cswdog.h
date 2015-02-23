@@ -41,6 +41,7 @@
 #define CS_WATCHDOG_TOKEN_FILE	("/var/run/cswdog")
 #define CS_WATCHDOG_IPC_MODE	(0666)
 #define CS_WATCHDOG_MTYPE	(1)
+
 /**
  * Watchdog reset message structure
  */
