@@ -263,6 +263,97 @@ void pm_request_kill ( wd_proc_t *process, int action )
 	llist_add_end ( &pm_kill_queue, ( llist_t * ) request );
 
 } 
+
+void pm_add_process ( 	const char *name, 
+			int wd_timeout, 
+			const char *path, 
+			const char **args )
+{
+	int		 ctr;
+	int		 argc;
+	wd_proc_t	*process;
+
+	/* Check for NULL pointers */
+	csassert( name != NULL );
+	csassert( path != NULL );
+	csassert( args != NULL );
+
+	/* Allocate new process structure */
+	process = malloc ( sizeof ( wd_proc_t ) );
+
+	/* Handle out of memory error */
+	cserror( process != NULL, 
+		LOG_ERROR, 
+		"Could not allocate process object");
+
+	/* Allocate process name */
+	process->name = malloc ( strlen ( name ) + 1 );
+
+	/* Handle out of memory error */
+	cserror( process->name != NULL, 
+		LOG_ERROR, 
+		"Could not allocate process name");
+
+	/* Copy process name */
+	strcpy ( process->name, name );
+
+	/* Allocate process path */
+	process->path = malloc ( strlen ( path ) + 1 );
+
+	/* Handle out of memory error */
+	cserror( process->name != NULL, 
+		LOG_ERROR, 
+		"Could not allocate process path");
+
+	/* Copy process path */
+	strcpy ( process->path, path );
+
+	/* Count process arguments */
+	argc = 0;
+	while ( args[ argc++ ] != NULL );
+
+	/* Allocate process arguments */
+	process->args = malloc ( ( argc + 1 ) * sizeof ( char * ) );
+
+	/* Handle out of memory error */
+	cserror( process->args != NULL, 
+		LOG_ERROR, 
+		"Could not allocate process arguments");
+
+	/* Allocate and copy arguments */
+	for ( ctr = 0; ctr < argc; ctr++ ) {
+
+		/* Allocate argument */
+		process->args[ ctr ] = malloc ( strlen( args[ ctr ] ) + 1 );
+
+		/* Handle out of memory error */
+		cserror( process->args[ ctr ] != NULL, 
+			LOG_ERROR, 
+			"Could not allocate process argument");
+
+		/* Copy the argument */
+		strcpy ( process->args[ ctr ], args[ ctr ] );
+
+	}
+
+	/* Set argument list terminator */
+	process->args[ ctr ] = NULL;
+	
+	/* Fill process fields */
+	process->wd_timeout	= wd_timeout;
+	process->pid		= 0;
+	process->last_reset	= 0;
+	process->freeze_count	= 0;
+	process->term_count	= 0;
+	process->last_status	= 0;
+
+	/* Add process to list */
+	llist_add_end ( &pm_process_list, ( llist_t * ) process );
+
+	/* Request process start */
+	pm_request_respawn ( process );
+
+}
  
 void pm_collect_children ( void )
 {

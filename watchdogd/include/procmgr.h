@@ -91,6 +91,11 @@ typedef struct {
 
 void pm_initialize( void );
 
+void pm_add_process ( 	const char *name, 
+			int wd_timeout, 
+			const char *path, 
+			const char **args );
+
 wd_proc_t *pm_get_process( pid_t pid );
 
 void pm_process ( void );
