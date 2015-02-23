@@ -139,7 +139,7 @@ int g_get_fifo_fill( void )
 void g_calibrate ( void )
 {
 
-	int	acc_x, acc_y, acc_z, count;
+	int	acc_x, acc_y, acc_z, count, ctr;
 
 	/* Set FIFO to stream mode */
 	g_write_reg ( 	LSM9DS0_FIFO_CTRL_REG_G, 
