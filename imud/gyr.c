@@ -177,8 +177,7 @@ void g_initialize ( void )
 
 	/* Set FIFO to stream mode */
 	g_write_reg ( 	LSM9DS0_FIFO_CTRL_REG_G, 
-			LSM9DS0_CRFG_FM_STREAM |
+			LSM9DS0_CRFG_FM_BYPASS |
 			LSM9DS0_CRFG_WTM(7) );
 
-	
 }
