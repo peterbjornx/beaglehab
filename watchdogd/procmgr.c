@@ -47,6 +47,11 @@
 #include <sys/wait.h>
 
 /*
+ * We need stdlib for the exit function and for memory management
+ */
+#include <stdlib.h>
+
+/*
  * We need errno to handle errors that occurred in system calls
  */
 #include <errno.h>
@@ -69,7 +74,7 @@
 /*
  * We need signal for the kill function
  */
-#include <unistd.h>
+#include <signal.h>
 
 llist_t pm_process_list;
 
@@ -81,7 +86,7 @@ int pm_get_process_iterator( llist_t *node, void *param )
 {
 	wd_proc_t	*process = ( wd_proc_t * ) node;
 	pid_t		*pid 	 = ( pid_t * ) param;
-	return process->pid == pid;
+	return process->pid == *pid;
 }
 
 wd_proc_t *pm_get_process( pid_t pid )
@@ -215,7 +220,9 @@ void pm_request_respawn ( wd_proc_t *process )
 	request = malloc ( sizeof ( wd_respawn_t ) );
 
 	/* Handle out of memory error */
-	cserror( request != NULL, "Could not allocate process respawn request");
+	cserror( request != NULL, 
+		LOG_ERROR, 
+		"Could not allocate process respawn request");
 	
 	/* Fill its fields */
 	request->process = process;
@@ -236,7 +243,9 @@ void pm_request_kill ( wd_proc_t *process, int action )
 	request = malloc ( sizeof ( wd_respawn_t ) );
 
 	/* Handle out of memory error */
-	cserror( request != NULL, "Could not allocate process kill request");
+	cserror( request != NULL, 
+		LOG_ERROR,
+		"Could not allocate process kill request");
 	
 	/* Fill its fields */
 	request->process = process;
@@ -393,7 +402,7 @@ void pm_process_respawns ( void )
 		/* Log this event */
 		cs_log( LOG_INFO, 
 			"Respawning child %s",
-			process->name );
+			request->process->name );
 		
 		/* Try to respawn it */
 		if ( pm_spawn_process( request->process ) ) {
@@ -413,7 +422,7 @@ void pm_process_respawns ( void )
 			/* Log this event */
 			cs_log( LOG_INFO, 
 				"Could not respawn child %s",
-				process->name );
+				request->process->name );
 		}
 
 	}
@@ -436,10 +445,10 @@ void pm_process_kills ( void )
 		/* Log this event */
 		cs_log( LOG_INFO, 
 			"Killing frozen child %s",
-			process->name );
+			request->process->name );
 		
 		/* Try to kill it */
-		if ( pm_kill_process( request->process, WD_RESPAWN ) ) {
+		if ( pm_kill_process( request->process ) ) {
 		
 			/* Kill was successful */
 
@@ -464,7 +473,7 @@ void pm_process_kills ( void )
 			/* Log this event */
 			cs_log( LOG_INFO, 
 				"Could not kill child %s",
-				process->name );
+				request->process->name );
 		}
 
 	}
