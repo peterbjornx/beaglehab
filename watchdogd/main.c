@@ -51,6 +51,11 @@
  */
 #include <string.h>
 
+/*
+ * We need stdio for opening the configuration file
+ */
+#include <stdio.h>
+
 void parse_config_line ( const char *line )
 {
 	char	*args[ 32 ];
@@ -82,7 +87,7 @@ void parse_config_line ( const char *line )
 		"Could not allocate line buffer");
 
 	/* Grab the part of the line before the first equals sign */
-	name = strtok ( line_copy, " =\t" );	 
+	name = strtok ( line_copy, " =\t\n" );	 
 
 	/* Check if the string was not empty */
 	cserror( name != NULL, 
@@ -92,7 +97,7 @@ void parse_config_line ( const char *line )
 
 	/* Scan the remaining tokens */
 	ctr = 0;
-	while ( ( token = strtok ( NULL, " \t" ) ) != NULL ) {
+	while ( ( token = strtok ( NULL, " \t\n" ) ) != NULL ) {
 		
 		/* First token is the watchdog timeout ( in seconds ) */
 		if ( ctr == 0 ) 
@@ -151,6 +156,52 @@ void parse_config_line ( const char *line )
 	/* Free variables */
 	free ( line_copy );
 
+}
+
+void parse_config_file ( const char *path )
+{
+	char line_buffer[161];
+	FILE *config_file;
+
+	/* Check for NULL pointers */
+	csassert( path != NULL );
+
+	/* Attempt to open the file */
+	config_file = fopen ( path, "r" );
+
+	/* Check for errors */
+	cserror( config_file == NULL, 
+		 LOG_ERROR,
+		 "Could not open config file (%s): %i(%s)",
+		 path,
+		 errno,
+		 strerror( errno ) );
+	
+	/* Read all lines from the file */
+	while ( fgets ( line_buffer, 160, config_file ) != NULL ) {
+
+		/* Parse the line */
+		parse_config_line ( line_buffer );
+		
+	}
+
+	/* Check for errors */
+	cserror( ferror ( config_file ) == 0 , 
+		 LOG_ERROR,
+		 "Could not read from config file (%s): %i(%s)",
+		 path,
+		 errno,
+		 strerror ( errno ) );
+
+	
+	/* Close the file */
+	cserror( fclose ( config_file ) == 0,
+		 LOG_WARN,
+		 "Could not close config file (%s): %i(%s)",
+		 path,
+		 errno,
+		 strerror ( errno ) );
+	
 }
 
 int main( int argc, char **argv ) 
