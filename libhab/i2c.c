@@ -120,6 +120,8 @@ int	csi2c_write_register( 	csi2c_bus_t *bus,
 	struct i2c_msg			tr_queue[2];
 	struct i2c_rdwr_ioctl_data	tr_desc;
 
+	uint8_t	obuf[33];
+
 	/* Check for NULL pointers */
 	csassert( bus != NULL );
 	csassert( ( size == 0 ) || ( buffer != NULL ) );
@@ -131,20 +133,15 @@ int	csi2c_write_register( 	csi2c_bus_t *bus,
 	/* Setup message descriptor for the register address selection packet */
 	tr_queue[0].addr  = ( __u16 ) slave_addr;
 	tr_queue[0].flags = ( __u16 ) 0;
-	tr_queue[0].len	  = ( __u16 ) 1; 
-	tr_queue[0].buf	  = ( __u8 *) &reg_addr;
+	tr_queue[0].len	  = ( __u16 ) size + 1; 
+	tr_queue[0].buf	  = ( __u8 *) obuf;
 	
+	obuf[0] = reg_addr;
+
 	/* If necessary, setup message descriptor for the data packet */
 	if ( size != 0 ) {
 
-		/* Modify transaction descriptor to include the second msg*/
-		tr_desc.nmsgs = 2;
-
-		/* Setup message descriptor for the data packet */
-		tr_queue[1].addr  = ( __u16 ) slave_addr;
-		tr_queue[1].flags = ( __u16 ) 0;
-		tr_queue[1].len	  = ( __u16 ) size; 
-		tr_queue[1].buf	  = ( __u8 *) buffer;
+		memcpy(&(obuf[1]), buffer, size);
 
 	}
 
