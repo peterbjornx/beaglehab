@@ -108,12 +108,16 @@ wd_proc_t *pm_get_process( pid_t pid )
 int pm_spawn_process ( wd_proc_t *process )
 {
 	pid_t	pid;
+	time_t	now;
 
 	/* Check for NULL pointers */
 	csassert( process != NULL );
 
 	/* Log what we are doing */
 	cs_log( LOG_INFO, "Spawning %s", process->name );
+
+	/* Acquire the current time */
+	time ( &now );
 
 	/* Fork */
 	pid = fork ( );
@@ -159,6 +163,9 @@ int pm_spawn_process ( wd_proc_t *process )
 	
 		/* We are the parent, save the pid */
 		process->pid = pid;
+
+		/* Prevent immediate watchdog-kill */
+		process->last_reset = now;
 
 		/* Fork was successful, if exec fails we will find out through*/
 		/* waitpid */
@@ -403,11 +410,19 @@ void pm_collect_children ( void )
 
 				/* Check if we found it */
 				if ( process == NULL ) {
-					
-					/* We did not, log this event */
-					cs_log(	LOG_WARN, 
-						"Unknown child died: %i",
-						(int) w_pid );
+
+					/* Ignore hard-killed unknown children*/
+					/* A watchdog-kill-respawn will erase */
+					/* the old pid so this will yield a */
+					/* false positive here otherwise */					
+					if ( ( !WIFSIGNALED( w_status ) ) ||
+					     (WTERMSIG(w_status) != SIGKILL) ) {
+			
+						/* We did not, log this event */
+						cs_log(	LOG_WARN, 
+							"Unknown child died: %i",
+							(int) w_pid );
+					}
 					
 					/* Continue on to next child */
 					continue;

@@ -4,4 +4,4 @@
 #Process|Watchdg|Binary 		| Tab Seperated Arguments
 #  name |timeout| path			| 
 #-------------------------------------------------------------------------------
-wdtest2	1	/bin/sleep		10		
+wdtest2	3	/bin/sleep		10		
