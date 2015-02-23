@@ -31,4 +31,6 @@
 
 extern csi2c_bus_t *imud_sensor_bus;
 
+void g_initialize ( void );
+
 #endif

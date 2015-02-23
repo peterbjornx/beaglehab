@@ -64,7 +64,7 @@
 #define LSM9DS0_CR1G_PD		(0x08)
 #define LSM9DS0_CR1G_XEN	(0x02)
 #define LSM9DS0_CR1G_YEN	(0x01)
-#define LSM9DS0_CR1G_XEN	(0x04)
+#define LSM9DS0_CR1G_ZEN	(0x04)
 
 /* Control register 2 */
 #define LSM9DS0_CTRL_REG2_G	(0x21)
@@ -243,10 +243,10 @@
 /* Interrupt threshold registers */
 #define LSM9DS0_INT1_TSH_ZH_G	(0x32)
 #define LSM9DS0_INT1_TSH_ZL_G	(0x33)
-#define LSM9DS0_INT1_TSH_ZH_G	(0x34)
-#define LSM9DS0_INT1_TSH_ZL_G	(0x35)
-#define LSM9DS0_INT1_TSH_ZH_G	(0x36)
-#define LSM9DS0_INT1_TSH_ZL_G	(0x37)
+#define LSM9DS0_INT1_TSH_YH_G	(0x34)
+#define LSM9DS0_INT1_TSH_YL_G	(0x35)
+#define LSM9DS0_INT1_TSH_XH_G	(0x36)
+#define LSM9DS0_INT1_TSH_XL_G	(0x37)
 
 /* Interrupt duration register */
 #define LSM9DS0_INT1_DURATION_G	(0x38)

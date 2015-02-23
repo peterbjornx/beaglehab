@@ -34,6 +34,7 @@ LIBS = -lhab -lrt
 
 # define the C source files
 SRCS = main.c \
+gyr.c
 
 # define the C object files 
 #

@@ -47,48 +47,41 @@
 #include <string.h>
 
 /*
- * We need stdio for reading the configuration file
+ * We need the register map for the IMU
  */
-#include <stdio.h>
-
-/*
- * We need unistd for the microsecond sleep
- */
-#include <unistd.h>
+#include "lsm9ds0.h"
 
 /*
  * We need the imud globals header
  */
 #include "imud.h"
 
-csi2c_bus_t *imud_sensor_bus;
-
-void usage ( const char *reason )
+uint8_t g_read_reg ( uint8_t reg_addr )
 {
-	fprintf( stderr, 
-		 "Syntax error: %s\nUsage: imud\n",
-		 reason );
-	exit ( EXIT_FAILURE );
+	uint8_t	value;
+	int status;
+
+	/* Do an I2C read on the register */
+	status = csi2c_read_register(	imud_sensor_bus, 
+					LSM9DS0_G_ADDR, 
+					reg_addr,
+					&value,
+					sizeof( uint8_t ) );
+
+	cserror( status >= 0,
+		 LOG_ERROR,
+		 "Failed to read gyroscope register 0x%x: %i(%s)",
+		 (int) reg_addr,
+		 errno,
+		 strerror ( errno ) );
+
+	return value;
+
 }
 
-int main( int argc, char **argv ) 
+void g_initialize ( void )
 {
-
-	/* Validate arguments */
-	if ( argc != 1 )
-		usage ( "argument count" );
-	
-	imud_sensor_bus = csi2c_open_bus ( 1 );
-
-	g_initialize();
-
-	/* Enter main loop */	
-	for ( ; ; ) {
-
-		/* Wait for 100 milliseconds */
-		usleep ( 100000 );		
-	
-	}
-
-
+	uint8_t magic;
+	magic = g_read_reg ( LSM9DS0_WHO_AM_I_G );
+	cs_log(LOG_INFO, "Gyroscope reported magic 0x%x\n", magic);
 }
