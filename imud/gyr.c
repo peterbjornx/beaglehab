@@ -135,7 +135,7 @@ void g_initialize ( void )
 
 	/* Check if we can talk to the gyroscope */
 	temp = g_read_reg ( LSM9DS0_WHO_AM_I_G );
-	cserror(	temp != LSM9DS0_G_MAGIC, 
+	cserror(	temp == LSM9DS0_G_MAGIC, 
 			LOG_ERROR,
 			"Invalid gyroscope magic: 0x%x", 
 			temp );
