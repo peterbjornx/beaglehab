@@ -144,7 +144,7 @@ int	csi2c_write_register( 	csi2c_bus_t *bus,
 		tr_queue[1].addr  = ( __u16 ) slave_addr;
 		tr_queue[1].flags = ( __u16 ) 0;
 		tr_queue[1].len	  = ( __u16 ) size; 
-		tr_queue[1].buf	  = ( __u8 *) &reg_addr;
+		tr_queue[1].buf	  = ( __u8 *) buffer;
 
 	}
 
@@ -186,7 +186,7 @@ int	csi2c_read_register( 	csi2c_bus_t *bus,
 		tr_queue[1].addr  = ( __u16 ) slave_addr;
 		tr_queue[1].flags = ( __u16 ) I2C_M_RD;
 		tr_queue[1].len	  = ( __u16 ) size; 
-		tr_queue[1].buf	  = ( __u8 *) &reg_addr;
+		tr_queue[1].buf	  = ( __u8 *) buffer;
 
 	}
 

@@ -2,6 +2,7 @@
 gpsd/gpsd
 radiod/radiod
 watchdogd/watchdogd
+imud/imud
 *.a
 *~
 clitest
