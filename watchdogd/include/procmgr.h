@@ -89,5 +89,8 @@ typedef struct {
 
 } wd_kill_t;
 
+wd_proc_t *pm_get_process( pid_t pid );
+
+void pm_process ( void );
 
 #endif
