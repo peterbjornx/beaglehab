@@ -37,7 +37,8 @@ LIBS =
 SRCS = llist.c \
 csipc.c \
 log.c \
-wdog.c
+wdog.c \
+i2c.c
 
 # define the C object files 
 #
