@@ -82,6 +82,14 @@ llist_t pm_respawn_queue;
 
 llist_t pm_kill_queue;
 
+void pm_initialize( void )
+{
+	/* Create llist head nodes */
+	llist_create( &pm_process_list );
+	llist_create( &pm_respawn_queue );
+	llist_create( &pm_kill_queue );
+}
+
 int pm_get_process_iterator( llist_t *node, void *param )
 {
 	wd_proc_t	*process = ( wd_proc_t * ) node;

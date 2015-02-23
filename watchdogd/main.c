@@ -24,4 +24,13 @@
 int main( int argc, char **argv ) 
 {
 	
+	for ( ; ; ) {
+
+		wdipc_process ( );
+		pm_process ( );
+		
+	
+	}
+
+
 }
