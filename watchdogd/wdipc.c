@@ -163,8 +163,7 @@ void wdipc_process ( void )
 			}			
 		
 		} else if ( /* Verify message size */
-			 msgsz != ( sizeof ( cswdog_reset_t ) - sizeof( long ) ) 
-			  ) {
+			 msgsz != sizeof ( cswdog_reset_t ) ) {
 			
 			/* Invalid size */ 
 			

@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include "testipc.h"
 #include <hab/csipc.h>
+#include <hab/cswdog.h>
 #include <time.h>
 #include <unistd.h>
 #include <assert.h>
@@ -39,6 +40,7 @@ int main( int argc, char **argv )
 	double latency;
 	int delay;
 	csipc_set_program( argv[4] );
+	cswdog_initialize ( ) ;
 	assert(argc >= 5);
 	ipc_chan = csipc_open_channel( argv[1], sizeof(cstest_ipc_t), atoi(argv[2]));
 	delay = atoi(argv[3]);
@@ -48,6 +50,7 @@ int main( int argc, char **argv )
 		curtime = time(NULL);
 		latency = difftime(curtime, buffer.timestamp);
 		printf("latency: %.f serial:%i\n", latency, buffer.serial);
+		cswdog_reset_watchdog ( );
 		sleep(delay);
 	}
 }

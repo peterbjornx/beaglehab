@@ -4,4 +4,6 @@
 #Process|Watchdg|Binary 		| Tab Seperated Arguments
 #  name |timeout| path			| 
 #-------------------------------------------------------------------------------
-wdtest2	3	/bin/sleep		10		
+ipcserv	3	../libhab_test/srvtest	testipc	10	1
+ipccli1 7	../libhab_test/clitest	testipc	10	6	cli1
+ipccli2 20	../libhab_test/clitest	testipc	10	8	cli2

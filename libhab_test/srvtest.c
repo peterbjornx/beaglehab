@@ -39,6 +39,7 @@ int main( int argc, char **argv )
 	double latency;
 	int delay;
 	csipc_set_program( "srvtest" );
+	cswdog_initialize ( ) ;
 	assert(argc >= 4);
 	ipc_chan = csipc_create_server( argv[1], sizeof(cstest_ipc_t), atoi(argv[2]));
 	delay = atoi(argv[3]);
@@ -48,6 +49,7 @@ int main( int argc, char **argv )
 		buffer.serial++;
 		memcpy ( ipc_chan->pl_buffer, &buffer, sizeof (cstest_ipc_t));
 		csipc_server_process(ipc_chan);
+		cswdog_reset_watchdog ( );
 		sleep(delay);
 	}
 }
