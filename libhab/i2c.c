@@ -125,20 +125,22 @@ int	csi2c_write_register( 	csi2c_bus_t *bus,
 	/* Check for NULL pointers */
 	csassert( bus != NULL );
 	csassert( ( size == 0 ) || ( buffer != NULL ) );
+	csassert( size <= 32 );
 
 	/* Setup transaction descriptor */
 	tr_desc.msgs	  = tr_queue;
 	tr_desc.nmsgs	  = 1;	
 
-	/* Setup message descriptor for the register address selection packet */
+	/* Setup message descriptor for the packet */
 	tr_queue[0].addr  = ( __u16 ) slave_addr;
 	tr_queue[0].flags = ( __u16 ) 0;
 	tr_queue[0].len	  = ( __u16 ) size + 1; 
 	tr_queue[0].buf	  = ( __u8 *) obuf;
 	
+	/* Add the register address to the output buffer */
 	obuf[0] = reg_addr;
 
-	/* If necessary, setup message descriptor for the data packet */
+	/* If necessary, copy payload to packet */
 	if ( size != 0 ) {
 
 		memcpy(&(obuf[1]), buffer, size);

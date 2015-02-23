@@ -61,7 +61,7 @@
  */
 #include "imud.h"
 
-volatile lsm9ds0_output_t	g_output;
+lsm9ds0_output_t	g_output;
 
 uint8_t g_read_reg ( uint8_t reg_addr )
 {
@@ -96,8 +96,6 @@ void g_poll_output( void )
 					LSM9DS0_OUT_X_L_G | 0x80,
 					&g_output,
 					sizeof( lsm9ds0_output_t ) );
-
-	g_read_reg(LSM9DS0_OUT_Z_H_G );
 
 	cserror( status >= 0,
 		 LOG_ERROR,
