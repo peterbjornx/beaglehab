@@ -47,6 +47,11 @@
 #include <string.h>
 
 /*
+ * We need string to generate friendly names for errors
+ */
+#include <usleep.h>
+
+/*
  * We need the register map for the IMU
  */
 #include "lsm9ds0.h"
@@ -92,6 +97,8 @@ void g_poll_output( void )
 					&g_output,
 					sizeof( lsm9ds0_output_t ) );
 
+	g_read_reg(LSM9DS0_OUT_Z_H_G );
+
 	cserror( status >= 0,
 		 LOG_ERROR,
 		 "Failed to read gyroscope output: %i(%s)",
@@ -122,6 +129,8 @@ void g_write_reg ( uint8_t reg_addr, uint8_t value )
 		 (int) reg_addr,
 		 errno,
 		 strerror ( errno ) );
+
+	usleep(10000);
 
 }
 
