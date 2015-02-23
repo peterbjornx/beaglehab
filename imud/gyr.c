@@ -49,7 +49,7 @@
 /*
  * We need string to generate friendly names for errors
  */
-#include <usleep.h>
+#include <unistd.h>
 
 /*
  * We need the register map for the IMU
