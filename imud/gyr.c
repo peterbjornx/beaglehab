@@ -152,6 +152,8 @@ void g_calibrate ( void )
 	/* Get number of samples currently in FIFO */
 	count = g_get_fifo_fill ( ) ;
 
+	acc_x = acc_y = acc_z = 0;
+
 	for ( ctr = 0; ctr < count; ctr++ ) {
 
 		/* Read a set of data from the FIFO */
