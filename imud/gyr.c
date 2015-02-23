@@ -152,6 +152,8 @@ void g_calibrate ( void )
 	/* Get number of samples currently in FIFO */
 	count = g_get_fifo_fill ( ) ;
 
+	acc_x = acc_y = acc_z = 0;
+
 	for ( ctr = 0; ctr < count; ctr++ ) {
 
 		/* Read a set of data from the FIFO */
@@ -244,8 +246,8 @@ void g_process ( void )
 	y = g_offset_y + g_output.y * g_scale;
 	z = g_offset_z + g_output.z * g_scale;
 
-	cs_log(LOG_INFO, "Gyroscope measurements: [\t%d;\t%d;\t%d]", 
-			(int)x,
-			(int)y,
-			(int)z);
+	cs_log(LOG_INFO, "Gyroscope measurements: [\t%f;\t%f;\t%f]", 
+			x,
+			y,
+			z);
 }
