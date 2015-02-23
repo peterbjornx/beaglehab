@@ -52,9 +52,14 @@
 #include <string.h>
 
 /*
- * We need stdio for opening the configuration file
+ * We need stdio for reading the configuration file
  */
 #include <stdio.h>
+
+/*
+ * We need unistd for the microsecond sleep
+ */
+#include <unistd.h>
 
 void parse_config_line ( const char *line )
 {
@@ -204,14 +209,41 @@ void parse_config_file ( const char *path )
 	
 }
 
+void usage ( const char *reason )
+{
+	fprintf( stderr, 
+		 "Syntax error: %s\nUsage: watchdogd <config file path>\n",
+		 reason );
+	exit ( EXIT_FAILURE );
+}
+
 int main( int argc, char **argv ) 
 {
+
+	/* Validate arguments */
+	if ( argc != 2 )
+		usage ( "argument count" );
+
+	/* Initialize process manager */	
+	pm_initialize ( );
 	
+	/* Load configuration */
+	parse_config_file ( argv[1] );
+
+	/* Initialize watchdog IPC */
+	wdipc_initialize ( );
+	
+	/* Enter main loop */	
 	for ( ; ; ) {
 
+		/* Process watchdog timer reset requests */
 		wdipc_process ( );
+
+		/* Process process events */
 		pm_process ( );
-		
+
+		/* Wait for 100 milliseconds */
+		usleep ( 100000 );		
 	
 	}
 
