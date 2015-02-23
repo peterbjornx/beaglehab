@@ -182,6 +182,11 @@ void g_calibrate ( void )
 	 
 }
 
+void g_set_scale ( void )
+{
+	
+}
+
 void g_initialize ( void )
 {
 	uint8_t temp;
@@ -244,8 +249,8 @@ void g_process ( void )
 	y = g_offset_y + g_output.y * g_scale;
 	z = g_offset_z + g_output.z * g_scale;
 
-	cs_log(LOG_INFO, "Gyroscope measurements: [\t%d;\t%d;\t%d]", 
-			(int)x,
-			(int)y,
-			(int)z);
+	cs_log(LOG_INFO, "Gyroscope measurements: [\t%f;\t%f;\t%f]", 
+			x,
+			y,
+			z);
 }
