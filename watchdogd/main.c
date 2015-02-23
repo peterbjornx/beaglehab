@@ -63,7 +63,7 @@
 
 void parse_config_line ( const char *line )
 {
-	char	*args[ 32 ];
+	char	*args[ 33 ];
 	char	*line_copy = NULL;
 	char	*token = NULL;
 	char	*name = NULL;
@@ -75,8 +75,8 @@ void parse_config_line ( const char *line )
 	/* Check for NULL pointers */
 	csassert( line != NULL );
 
-	/* Check if the line is a comment */
-	if ( line[0] == '#' ) {
+	/* Check if the line is a comment or empty */
+	if ( (line[0] == '#') || (line[0] == '\0') ) {
 
 		/* The line is a comment, return */ 
 		return;
@@ -91,14 +91,23 @@ void parse_config_line ( const char *line )
 		LOG_ERROR, 
 		"Could not allocate line buffer");
 
+	/* Copy the line */
+	strcpy ( line_copy, line );
+
 	/* Grab the part of the line before the first equals sign */
-	name = strtok ( line_copy, " =\t\n" );	 
+	name = strtok ( line_copy, " \t\n" );	 
 
 	/* Check if the string was not empty */
-	cserror( name != NULL, 
-		LOG_ERROR, 
-		"Invalid configuration line [%s]", 
-		line_copy );
+	if ( name == NULL ) {
+		
+		/* The line was empty */
+	
+		/* Free variables */
+		free ( line_copy );
+		
+		/* Return */
+		return;
+	}
 
 	/* Scan the remaining tokens */
 	ctr = 0;
@@ -112,13 +121,13 @@ void parse_config_line ( const char *line )
 			path = token;
 		/* Remaining tokens are arguments */
 		else if ( ctr < 34 ){
-			args[ ctr - 2 ] = token;
+			args[ ctr - 1 ] = token;
 		} else {
 			/* We only support 32 arguments */
 
 			cs_log_fatal (	LOG_ERROR, 
 					"Too many tokens on line [%s]",
-					line_copy );
+					line );
 		}
 		
 		ctr++;
@@ -129,15 +138,18 @@ void parse_config_line ( const char *line )
 	cserror( wdt != NULL, 
 		 LOG_ERROR,
 		 "No watchdog timeout specified on line [%s]",
-		 line_copy );
+		 line );
 
 	cserror( path != NULL, 
 		 LOG_ERROR,
 		 "No binary path specified on line [%s]",
-		 line_copy );
+		 line );
+
+	/* Add argv[0] */
+	args[0] = path;
 
 	/* Add argument list terminator */
-	args[ ctr - 2 ] = NULL;
+	args[ ctr - 1 ] = NULL;
 
 	/* Parse watchdog timeout */
 	wd_timeout = atoi ( wdt );
@@ -147,7 +159,7 @@ void parse_config_line ( const char *line )
 		 LOG_ERROR,
 		 "Invalid watchdog timeout (%i) specified on line [%s]",
 		 wd_timeout,
-		 line_copy );
+		 line );
 
 	/* Log this event */
 	cs_log( LOG_INFO, 
@@ -175,7 +187,7 @@ void parse_config_file ( const char *path )
 	config_file = fopen ( path, "r" );
 
 	/* Check for errors */
-	cserror( config_file == NULL, 
+	cserror( config_file != NULL, 
 		 LOG_ERROR,
 		 "Could not open config file (%s): %i(%s)",
 		 path,

@@ -86,7 +86,7 @@ void wdipc_initialize ( void )
 	key = ftok( CS_WATCHDOG_TOKEN_FILE, 0 );
 
 	/* Check for errors */
-	cserror( key == -1, 
+	cserror( key != -1, 
 		LOG_ERROR, 
 		"Could not open watchdog IPC channel: %i(%s)",
 		errno,
@@ -96,7 +96,7 @@ void wdipc_initialize ( void )
 	wdipc_mqueue_handle = msgget ( key, IPC_CREAT | CS_WATCHDOG_IPC_MODE );
 
 	/* Check for errors */
-	cserror( wdipc_mqueue_handle == -1, 
+	cserror( wdipc_mqueue_handle != -1, 
 		LOG_ERROR, 
 		"Could not open watchdog IPC channel: %i(%s)",
 		errno,

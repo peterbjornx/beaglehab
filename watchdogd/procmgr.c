@@ -248,7 +248,7 @@ void pm_request_kill ( wd_proc_t *process, int action )
 	csassert( process != NULL );
 
 	/* Allocate memory for the request */
-	request = malloc ( sizeof ( wd_respawn_t ) );
+	request = malloc ( sizeof ( wd_kill_t ) );
 
 	/* Handle out of memory error */
 	cserror( request != NULL, 
@@ -309,8 +309,8 @@ void pm_add_process ( 	const char *name,
 	strcpy ( process->path, path );
 
 	/* Count process arguments */
-	argc = 0;
-	while ( args[ argc++ ] != NULL );
+	argc = -1;
+	while ( args[ ++argc ] != NULL );
 
 	/* Allocate process arguments */
 	process->args = malloc ( ( argc + 1 ) * sizeof ( char * ) );

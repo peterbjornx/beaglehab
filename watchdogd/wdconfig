@@ -1,0 +1,7 @@
+# watchdogd configuration example
+# Created: 23/02/2015 by Peter Bosch
+#-------------------------------------------------------------------------------
+#Process|Watchdg|Binary 		| Tab Seperated Arguments
+#  name |timeout| path			| 
+#-------------------------------------------------------------------------------
+wdtest2	1	/bin/sleep		10		
