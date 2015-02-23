@@ -155,23 +155,23 @@ void g_initialize ( void )
 			LSM9DS0_CR2G_HPCF( 0 ) );
 
 	/* Disable digital outputs besides the data bus */
-	//g_write_reg ( 	LSM9DS0_CTRL_REG3_G, 0 );
+	g_write_reg ( 	LSM9DS0_CTRL_REG3_G, 0 );
 
 	/* Set block update mode, little endian mode and set the scale to 245 */
 	g_write_reg ( 	LSM9DS0_CTRL_REG4_G, 
-			//LSM9DS0_CR4G_BLOCK_UPD |
+			LSM9DS0_CR4G_BLOCK_UPD |
 			LSM9DS0_CR4G_SCALE_245 );
 
 	/* Enable FIFO and highpass filter, set ADC input to HPF */
 	g_write_reg ( 	LSM9DS0_CTRL_REG5_G, 
-			//LSM9DS0_CR5G_FIFO_EN |
+			LSM9DS0_CR5G_FIFO_EN |
 			LSM9DS0_CR5G_HPF_EN |
 			LSM9DS0_CR5G_OS_HPF );
 
 	/* Set FIFO to stream mode */
-	/*g_write_reg ( 	LSM9DS0_FIFO_CTRL_REG_G, 
+	g_write_reg ( 	LSM9DS0_FIFO_CTRL_REG_G, 
 			LSM9DS0_CRFG_FM_STREAM |
-			LSM9DS0_CRFG_WTM(7) );*/
+			LSM9DS0_CRFG_WTM(7) );
 
 	
 }

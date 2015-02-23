@@ -173,7 +173,7 @@ int	csi2c_read_register( 	csi2c_bus_t *bus,
 	/* Setup message descriptor for the register address selection packet */
 	tr_queue[0].addr  = ( __u16 ) slave_addr;
 	tr_queue[0].flags = ( __u16 ) 0;
-	tr_queue[0].len	  = ( __u16 ) size; 
+	tr_queue[0].len	  = ( __u16 ) 1; 
 	tr_queue[0].buf	  = ( __u8 *) &reg_addr;
 	
 	/* If necessary, setup message descriptor for the data packet */
