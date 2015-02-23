@@ -183,6 +183,13 @@
 #define LSM9DS0_OUT_Z_L_G	(0x2C)
 #define LSM9DS0_OUT_Z_H_G	(0x2D)
 
+struct lsm9ds0_output {
+	int16_t		x;
+	int16_t		y;
+	int16_t		z;
+} __attribute__ (( packed ));
+
+typedef struct lsm9ds0_output lsm9ds0_output_t;
 
 /* FIFO control register */
 #define LSM9DS0_FIFO_CTRL_REG_G	(0x2E)

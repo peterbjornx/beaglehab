@@ -85,6 +85,8 @@ int main( int argc, char **argv )
 	/* Enter main loop */	
 	for ( ; ; ) {
 
+		g_poll_output();
+
 		/* Wait for 100 milliseconds */
 		usleep ( 100000 );		
 	
