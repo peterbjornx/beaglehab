@@ -1,18 +1,18 @@
 /* 
- * This file is part of imud.
+ * This file is part of gyrod.
  *
- * imud is free software: you can redistribute it and/or modify
+ * gyrod is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
 
- * imud is distributed in the hope that it will be useful,
+ * gyrod is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
- * along with imud.  If not, see <http://www.gnu.org/licenses/>.
+ * along with gyrod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -57,9 +57,9 @@
 #include "lsm9ds0.h"
 
 /*
- * We need the imud globals header
+ * We need the gyrod globals header
  */
-#include "imud.h"
+#include "gyro.h"
 
 lsm9ds0_output_t	g_output;
 double			g_scale = 245.0 / 32768.0;
@@ -73,7 +73,7 @@ uint8_t g_read_reg ( uint8_t reg_addr )
 	int status;
 
 	/* Do an I2C read on the register */
-	status = csi2c_read_register(	imud_sensor_bus, 
+	status = csi2c_read_register(	gyrod_sensor_bus, 
 					LSM9DS0_G_ADDR, 
 					reg_addr,
 					&value,
@@ -95,7 +95,7 @@ void g_poll_output( void )
 	int status;
 
 	/* Do an I2C read on the registers */
-	status = csi2c_read_register(	imud_sensor_bus, 
+	status = csi2c_read_register(	gyrod_sensor_bus, 
 					LSM9DS0_G_ADDR, 
 					LSM9DS0_OUT_X_L_G | 0x80,
 					&g_output,
@@ -114,7 +114,7 @@ void g_write_reg ( uint8_t reg_addr, uint8_t value )
 	int status;
 
 	/* Do an I2C write on the register */
-	status = csi2c_write_register(	imud_sensor_bus, 
+	status = csi2c_write_register(	gyrod_sensor_bus, 
 					LSM9DS0_G_ADDR, 
 					reg_addr,
 					&value,
@@ -166,10 +166,12 @@ void g_calibrate ( void )
 		
 	}
 
+	/* Convert offset to dps */
 	g_offset_x = acc_x * g_scale;
 	g_offset_y = acc_y * g_scale;
 	g_offset_z = acc_z * g_scale;
 
+	/* Divide by number of samples to calculate average offset */
 	g_offset_x /= count;
 	g_offset_y /= count;
 	g_offset_z /= count;
@@ -184,9 +186,38 @@ void g_calibrate ( void )
 	 
 }
 
-void g_set_scale ( void )
+void g_set_scale ( uint8_t scale )
 {
+	uint8_t reg;
+
+	/* Poll old register contents */
+	reg = g_read_reg ( LSM9DS0_CTRL_REG4_G );
+
+	/* Strip old scale setting */
+	reg &= ~LSM9DS0_CR4G_SCALE_MASK;
+
+	/* Add new scale setting */
+	reg |= scale & LSM9DS0_CR4G_SCALE_MASK;
 	
+	/* Push register contents to sensor */
+	g_write_reg( LSM9DS0_CTRL_REG4_G, reg );
+	
+	/* Update multiplier */	
+	switch ( scale & LSM9DS0_CR4G_SCALE_MASK ) {
+
+		case LSM9DS0_CR4G_SCALE_245:
+			g_scale = 245.0 / 32768.0;
+			break;
+
+		case LSM9DS0_CR4G_SCALE_500:
+			g_scale = 500.0 / 32768.0;
+			break;
+
+		case LSM9DS0_CR4G_SCALE_2000:
+		default:
+			g_scale = 2000.0 / 32768.0;
+			break;
+	}
 }
 
 void g_initialize ( void )
@@ -251,7 +282,7 @@ void g_process ( void )
 	y = g_offset_y + g_output.y * g_scale;
 	z = g_offset_z + g_output.z * g_scale;
 
-	cs_log(LOG_INFO, "Gyroscope measurements: [\t%f;\t%f;\t%f]", 
+	cs_log(LOG_DEBUG, "Gyroscope measurements: [\t%f;\t%f;\t%f]", 
 			x,
 			y,
 			z);

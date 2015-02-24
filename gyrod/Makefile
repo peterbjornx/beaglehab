@@ -11,7 +11,7 @@ LD = @echo " [  LD  ]	" $@ ; gcc
 
 NASM = @echo " [ NASM ]	" $< ; nasm
 
-PROGNAME = imud
+PROGNAME = gyrod
 
 # define any compile-time flags
 CFLAGS = -Wall -g 
