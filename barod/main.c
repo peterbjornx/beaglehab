@@ -134,7 +134,9 @@ int main( int argc, char **argv )
 		b_process ( );
 
 		/* Encode new data */
-		barod_packet->timestamp	= now;
+		barod_packet->timestamp	  = now;
+		barod_packet->pressure	  = b_pressure;
+		barod_packet->temperature = b_temperature;
 
 		/* Process IPC */
 		csipc_server_process ( barod_ipc_server );

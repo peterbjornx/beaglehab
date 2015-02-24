@@ -29,6 +29,12 @@
  */
 #include <hab/csi2c.h>
 
+/* Current barometric pressure in millibar */
+extern double		 b_pressure;
+
+/* Current temperature in degrees Celsius */
+extern double		 b_temperature;
+
 extern csi2c_bus_t 	*barod_sensor_bus;
 
 void b_initialize ( void );
