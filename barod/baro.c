@@ -79,6 +79,12 @@ uint16_t b_tref;
 /* Temperature coefficient of temperature reading TEMPSENS */
 uint16_t b_tsens;
 
+/* Current barometric pressure in millibar */
+double	b_pressure;
+
+/* Current temperature in degrees Celsius */
+double	b_temperature;
+
 uint16_t b_read_mem ( uint8_t addr )
 {
 	uint8_t		buffer[2];
@@ -246,9 +252,33 @@ void b_initialize ( void )
 	
 	/* Load calibration data */
 	b_load_cal ( );
+
 }
 
 void b_process ( void )
 {
+	uint32_t	m_temp;
+	uint32_t	m_pres;
+	 int32_t	d_temp;
+	 int64_t	b_temp;
+	 int64_t	p_off;
+	 int64_t	p_sens;
 
+	/* Get measurements */
+	b_convert ( MS5607_CV_BARO_4K );
+	m_pres = b_read_adc ( );
+
+	b_convert ( MS5607_CV_BARO_4K );
+	m_temp = b_read_adc ( );
+
+	/* Calculate temperature */
+	d_temp = m_temp - ( int32_t ) ( ( (uint32_t) b_tref ) << 8 );
+	b_temp = 2000 + 
+		( ( ( (int64_t) d_temp ) * ( (int64_t) b_tsens ) ) >> 23ll );
+
+	b_temperature = ( (double) b_temp ) / 100.0;
+
+	/* Log temperature */
+	cs_log( LOG_DEBUG, "Temperature reading: %f", b_temperature );
+ 
 }
