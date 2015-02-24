@@ -1,0 +1,96 @@
+/* 
+ * This file is part of gyrod.
+ *
+ * gyrod is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * gyrod is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with gyrod.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * 
+ * Created:	23/02/2015
+ * Author:	Peter Bosch <peterbosc@gmail.com>
+ */
+
+/*
+ * We need the libhab I2C API
+ */
+#include <hab/csi2c.h>
+
+/*
+ * We need hab/cslog for logging
+ */
+#include <hab/cslog.h>
+
+/*
+ * We need stdlib for the exit function and for memory management
+ */
+#include <stdlib.h>
+
+/*
+ * We need errno to handle errors that occurred in system calls
+ */
+#include <errno.h>
+
+/*
+ * We need string to generate friendly names for errors
+ */
+#include <string.h>
+
+/*
+ * We need stdio for reading the configuration file
+ */
+#include <stdio.h>
+
+/*
+ * We need unistd for the microsecond sleep
+ */
+#include <unistd.h>
+
+/*
+ * We need the gyroscope functions
+ */
+#include "gyro.h"
+
+csi2c_bus_t *gyrod_sensor_bus;
+
+void usage ( const char *reason )
+{
+	fprintf( stderr, 
+		 "Syntax error: %s\nUsage: gyrod\n",
+		 reason );
+	exit ( EXIT_FAILURE );
+}
+
+int main( int argc, char **argv ) 
+{
+
+	/* Validate arguments */
+	if ( argc != 1 )
+		usage ( "argument count" );
+	
+	gyrod_sensor_bus = csi2c_open_bus ( 1 );
+
+	g_initialize();
+
+	/* Enter main loop */	
+	for ( ; ; ) {
+
+		g_process ( );
+
+		/* Wait for 100 milliseconds */
+		usleep ( 100000 );		
+	
+	}
+
+
+}
