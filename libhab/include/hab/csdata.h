@@ -79,4 +79,10 @@ typedef struct {
 	double	rate_z;
 } csproto_gyro_t;
 
+typedef struct {
+	time_t	timestamp;
+	double	pressure;
+	double	temperature;
+} csproto_baro_t;
+
 #endif
