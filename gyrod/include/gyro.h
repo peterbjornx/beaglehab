@@ -32,9 +32,9 @@
 extern csi2c_bus_t 	*gyrod_sensor_bus;
 
 extern double		 g_scale;
-extern double		 g_offset_x;
-extern double		 g_offset_y;
-extern double		 g_offset_z;
+extern double		 g_rate_x;
+extern double		 g_rate_y;
+extern double		 g_rate_z;
 
 void g_initialize ( void );
 

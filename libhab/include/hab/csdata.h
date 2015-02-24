@@ -35,6 +35,11 @@
 #include <stddef.h>
 
 /**
+ * We need time for the time_t type definition.
+ */
+#include <time.h>
+
+/**
  * These definitions specify the conversion factors used to convert the 
  * floating point telemetry data to the fixed-point transmission format
  */

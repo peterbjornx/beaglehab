@@ -32,6 +32,21 @@
 #include <hab/cslog.h>
 
 /*
+ * We need hab/csdata for IPC data 
+ */
+#include <hab/csdata.h>
+
+/*
+ * We need hab/csipc for the libhab IPC system
+ */
+#include <hab/csipc.h>
+
+/*
+ * We need hab/cswdog for the watchdog reset function
+ */
+#include <hab/cswdog.h>
+
+/*
  * We need stdlib for the exit function and for memory management
  */
 #include <stdlib.h>
@@ -57,11 +72,18 @@
 #include <unistd.h>
 
 /*
+ * We need time for the timestamps
+ */
+#include <time.h>
+
+/*
  * We need the gyroscope functions
  */
 #include "gyro.h"
 
-csi2c_bus_t *gyrod_sensor_bus;
+csi2c_bus_t	*gyrod_sensor_bus;
+cs_srv_t	*gyrod_ipc_server;
+csproto_gyro_t  *gyrod_packet;
 
 void usage ( const char *reason )
 {
@@ -73,22 +95,59 @@ void usage ( const char *reason )
 
 int main( int argc, char **argv ) 
 {
+	time_t now;
 
 	/* Validate arguments */
 	if ( argc != 1 )
 		usage ( "argument count" );
-	
+
+	/* Initialize watchdog client */
+	cswdog_initialize ( );
+
+	/* Perform an initial watchdog reset */
+	cswdog_reset_watchdog ( );
+
+	/* Open the I2C bus */
 	gyrod_sensor_bus = csi2c_open_bus ( 1 );
 
-	g_initialize();
+	/* Initialize the gyroscope sensor */
+	g_initialize ( );
+
+	/* Initialize the IPC library */
+	csipc_set_program ( "gyrod" );	
+
+	/* Create IPC server */
+	gyrod_ipc_server = csipc_create_server ( "gyrod", 
+						 sizeof( csproto_gyro_t ),
+						 10 );
+
+	/* Set buffer pointer */
+	gyrod_packet = ( csproto_gyro_t * ) gyrod_ipc_server->pl_buffer;
 
 	/* Enter main loop */	
 	for ( ; ; ) {
 
+		/* Grab timestamp */
+		time ( &now );
+	
+		/* Process new sensor data */
 		g_process ( );
 
-		/* Wait for 100 milliseconds */
-		usleep ( 100000 );		
+		/* Encode new data */
+		gyrod_packet->timestamp	= now;
+		gyrod_packet->range 	= g_scale * 32768.0;
+		gyrod_packet->rate_x 	= g_rate_x;
+		gyrod_packet->rate_y 	= g_rate_y;
+		gyrod_packet->rate_z 	= g_rate_z; 
+
+		/* Process IPC */
+		csipc_server_process ( gyrod_ipc_server );
+
+		/* Reset watchdog timer */		
+		cswdog_reset_watchdog ( ) ;
+
+		/* Wait for 50 milliseconds */
+		usleep ( 50000 );		
 	
 	}
 

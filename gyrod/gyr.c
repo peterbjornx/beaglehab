@@ -66,6 +66,9 @@ double			g_scale = 245.0 / 32768.0;
 double			g_offset_x;
 double			g_offset_y;
 double			g_offset_z;
+double			g_rate_x = 0.0;
+double			g_rate_y = 0.0;
+double			g_rate_z = 0.0;
 
 uint8_t g_read_reg ( uint8_t reg_addr )
 {
@@ -274,16 +277,15 @@ void g_initialize ( void )
 
 void g_process ( void )
 {
-	double x,y,z;	
 
 	g_poll_output();
 
-	x = g_offset_x + g_output.x * g_scale;
-	y = g_offset_y + g_output.y * g_scale;
-	z = g_offset_z + g_output.z * g_scale;
+	g_rate_x = g_offset_x + g_output.x * g_scale;
+	g_rate_y = g_offset_y + g_output.y * g_scale;
+	g_rate_z = g_offset_z + g_output.z * g_scale;
 
 	cs_log(LOG_DEBUG, "Gyroscope measurements: [\t%f;\t%f;\t%f]", 
-			x,
-			y,
-			z);
+			g_rate_x,
+			g_rate_y,
+			g_rate_z);
 }
