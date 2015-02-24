@@ -210,7 +210,7 @@ void b_load_cal ( void )
 
 	/* Read the PROM */
 	for ( ctr = 0; ctr < 8; ctr++ )
-		prom[ ctr ] = b_read_mem ( ctr );
+		prom[ ctr ] = b_read_mem ( ctr * 2 );
 
 	/* Determine the expected CRC */
 	crc_ex = (uint8_t) ( prom[ MS5607_M_CRC ] & 0x000F );

@@ -41,12 +41,12 @@
 #define	MS5607_PROM_READ(AdDr)	(0xA0 | (AdDr & 0xE))
 
 #define MS5607_M_MANUF		(0x00)
-#define MS5607_M_C1		(0x02)
-#define MS5607_M_C2		(0x04)
-#define MS5607_M_C3		(0x06)
-#define MS5607_M_C4		(0x08)
-#define MS5607_M_C5		(0x0A)
-#define MS5607_M_C6		(0x0C)
-#define MS5607_M_CRC		(0x0E)
+#define MS5607_M_C1		(0x01)
+#define MS5607_M_C2		(0x02)
+#define MS5607_M_C3		(0x03)
+#define MS5607_M_C4		(0x04)
+#define MS5607_M_C5		(0x05)
+#define MS5607_M_C6		(0x06)
+#define MS5607_M_CRC		(0x07)
 
 #endif
