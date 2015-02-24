@@ -24,6 +24,8 @@
 #ifndef __ms5607_h__
 #define __ms5607_h__
 
+#define MS5607_ADDR		(0x77)
+
 #define	MS5607_RESET		(0x1E)
 #define	MS5607_CV_BARO_4K	(0x48)
 #define	MS5607_CV_BARO_2K	(0x46)
