@@ -66,4 +66,12 @@ typedef struct {
 	double altitude;
 } csproto_gps_t;
 
+typedef struct {
+	time_t	timestamp;
+	double	range;
+	double	rate_x;
+	double	rate_y;
+	double	rate_z;
+} csproto_gyro_t;
+
 #endif
