@@ -274,7 +274,8 @@ void b_process ( void )
 	/* Calculate temperature */
 	d_temp = m_temp - ( int32_t ) ( ( (uint32_t) b_tref ) << 8 );
 	b_temp = 2000 + 
-		( ( ( (int64_t) d_temp ) * ( (int64_t) b_tsens ) ) >> 23ll );
+		( 
+	( ((int64_t) d_temp) * ( ((int64_t) b_tsens) & 0xFFFFull ) ) >> 23ll );
 
 	b_temperature = ( (double) b_temp ) / 100.0;
 
