@@ -62,22 +62,22 @@
 #include "baro.h"
 
 /* Pressure sensitivity SENSt1 */
-uint16_t b_psens_t1;
+ int32_t b_psens_t1;
 
 /* Pressure offset OFFt1 */
-uint16_t b_poff_t1;
+ int32_t b_poff_t1;
 
 /* Temperature coefficient of pressure sensitivity TCS */
-uint16_t b_tc_psens;
+ int32_t b_tc_psens;
 
 /* Temperature coefficient of pressure offset TCO */
-uint16_t b_tc_poff;
+ int32_t b_tc_poff;
 
 /* Reference temperature Tref */
-uint16_t b_tref;
+ int32_t b_tref;
 
 /* Temperature coefficient of temperature reading TEMPSENS */
-uint16_t b_tsens;
+ int64_t b_tsens;
 
 /* Current barometric pressure in millibar */
 double	b_pressure;
@@ -232,12 +232,12 @@ void b_load_cal ( void )
 		 (int) crc_ex);
 
 	/* Load values */
-	b_psens_t1 = prom[ MS5607_M_C1 ];
-	b_poff_t1  = prom[ MS5607_M_C2 ];
-	b_tc_psens = prom[ MS5607_M_C3 ];
-	b_tc_poff  = prom[ MS5607_M_C4 ];
-	b_tref     = prom[ MS5607_M_C5 ];
-	b_tsens    = prom[ MS5607_M_C6 ];
+	b_psens_t1 = ( ( int32_t ) prom[ MS5607_M_C1 ] ) & 0x0000FFFF;
+	b_poff_t1  = ( ( int32_t ) prom[ MS5607_M_C2 ] ) & 0x0000FFFF;
+	b_tc_psens = ( ( int32_t ) prom[ MS5607_M_C3 ] ) & 0x0000FFFF;
+	b_tc_poff  = ( ( int32_t ) prom[ MS5607_M_C4 ] ) & 0x0000FFFF;
+	b_tref     = ( ( int32_t ) prom[ MS5607_M_C5 ] ) & 0x0000FFFF;
+	b_tsens    = (int64_t) ( ((int32_t) prom[ MS5607_M_C6 ]) & 0x0000FFFF);
 
 	/* Log */
 	cs_log ( LOG_INFO, "Barometer calibration data loaded.\n");
@@ -257,25 +257,23 @@ void b_initialize ( void )
 
 void b_process ( void )
 {
-	uint32_t	m_temp;
-	uint32_t	m_pres;
-	 int32_t	d_temp;
+	 int32_t	m_temp;
+	 int32_t	m_pres;
+	 int64_t	d_temp;
 	 int64_t	b_temp;
 	 int64_t	p_off;
 	 int64_t	p_sens;
 
 	/* Get measurements */
 	b_convert ( MS5607_CV_BARO_4K );
-	m_pres = b_read_adc ( );
+	m_pres = (int32_t) b_read_adc ( );
 
 	b_convert ( MS5607_CV_BARO_4K );
-	m_temp = b_read_adc ( );
+	m_temp = (int32_t) b_read_adc ( );
 
 	/* Calculate temperature */
-	d_temp = m_temp - ( int32_t ) ( ( (uint32_t) b_tref ) << 8 );
-	b_temp = 2000 + 
-		( 
-	( ((int64_t) d_temp) * ( ((int64_t) b_tsens) & 0xFFFFull ) ) >> 23ll );
+	d_temp = m_temp - ( b_tref << 8 ) ;
+	b_temp = 2000 + ((d_temp * b_tsens) >> (int64_t) 23);
 
 	b_temperature = ( (double) b_temp ) / 100.0;
 
