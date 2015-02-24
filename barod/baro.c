@@ -61,6 +61,24 @@
  */
 #include "baro.h"
 
+/* Pressure sensitivity SENSt1 */
+uint16_t b_psens_t1;
+
+/* Pressure offset OFFt1 */
+uint16_t b_poff_t1;
+
+/* Temperature coefficient of pressure sensitivity TCS */
+uint16_t b_tc_psens;
+
+/* Temperature coefficient of pressure offset TCO */
+uint16_t b_tc_poff;
+
+/* Reference temperature Tref */
+uint16_t b_tref;
+
+/* Temperature coefficient of temperature reading TEMPSENS */
+uint16_t b_tsens;
+
 uint16_t b_read_mem ( uint8_t addr )
 {
 	uint8_t		buffer[2];
@@ -150,9 +168,82 @@ void b_convert ( uint8_t command )
 
 }
 
+uint8_t	b_crc4 ( uint16_t prom[] )
+{
+	int 		ctr;
+	uint16_t	n_rem;
+	uint16_t	crc_read;
+	uint8_t		n_bit;
+	
+	n_rem = 0x00;
+
+	crc_read = prom[ MS5607_M_CRC ];
+
+	prom [ MS5607_M_CRC ] &= 0xFF00;
+
+	for ( ctr = 0; ctr < 16; ctr++ ) {
+		n_rem ^= ( ctr & 1 ) ? 
+			( ( uint16_t ) ( prom[ ctr >> 1 ] & 0xFF ) ) : 
+			( ( uint16_t ) ( ( prom[ ctr >> 1 ] & 0xFF00 ) >> 8 ) );
+		
+		for ( n_bit = 8; n_bit > 0; n_bit-- ) {
+			if ( n_rem & 0x8000 )
+				n_rem = ( n_rem << 1 ) ^ 0x3000;
+			else
+				n_rem = ( n_rem << 1 );
+		}
+	}
+
+	n_rem = 0x0F & ( n_rem >> 12);
+
+	n_prom[ MS5607_M_CRC ] = crc_read;
+
+	return n_rem;
+
+}
+
+void b_load_cal ( void )
+{
+	int 	 ctr;
+	uint8_t	 crc, crc_ex;
+	uint16_t prom[8];
+
+	/* Read the PROM */
+	for ( ctr = 0; ctr < 8; ctr++ )
+		prom[ ctr ] = b_read_mem ( ctr );
+
+	/* Determine the expected CRC */
+	crc_ex = (uint8_t) ( prom[ MS5607_M_CRC ] & 0x000F );
+
+	/* Calculate the CRC */
+	crc = b_crc4 ( prom );
+
+	/* Verify it */
+	cserror( crc == crc_ex, 
+		 LOG_ERROR, 
+		 "Barometer calibration data CRC mismatch");
+
+	/* Load values */
+	b_psens_t1 = prom[ MS5607_M_C1 ];
+	b_poff_t1  = prom[ MS5607_M_C2 ];
+	b_tc_psens = prom[ MS5607_M_C3 ];
+	b_tc_poff  = prom[ MS5607_M_C4 ];
+	b_tref     = prom[ MS5607_M_C5 ];
+	b_tsens    = prom[ MS5607_M_C6 ];
+
+	/* Log */
+	cs_log ( LOG_INFO, "Barometer calibration data loaded.\n");
+
+}
+
 void b_initialize ( void )
 {
 
+	/* Reset the barometer chip */
+	b_reset ( );
+	
+	/* Load calibration data */
+	b_load_cal ( );
 }
 
 void g_process ( void )
