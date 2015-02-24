@@ -268,7 +268,7 @@ void b_process ( void )
 	b_convert ( MS5607_CV_BARO_4K );
 	m_pres = (int32_t) b_read_adc ( );
 
-	b_convert ( MS5607_CV_BARO_4K );
+	b_convert ( MS5607_CV_TEMP_4K );
 	m_temp = (int32_t) b_read_adc ( );
 
 	/* Calculate temperature */
