@@ -137,7 +137,7 @@ int main( int argc, char **argv )
 		barod_packet->timestamp	= now;
 
 		/* Process IPC */
-		csipc_server_process ( gyrod_ipc_server );
+		csipc_server_process ( barod_ipc_server );
 
 		/* Reset watchdog timer */		
 		cswdog_reset_watchdog ( ) ;

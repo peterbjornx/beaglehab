@@ -33,7 +33,8 @@ LFLAGS = -L../libhab
 LIBS = -lhab -lrt
 
 # define the C source files
-SRCS = main.c 
+SRCS = main.c \
+baro.c
 
 # define the C object files 
 #

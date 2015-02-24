@@ -196,7 +196,7 @@ uint8_t	b_crc4 ( uint16_t prom[] )
 
 	n_rem = 0x0F & ( n_rem >> 12);
 
-	n_prom[ MS5607_M_CRC ] = crc_read;
+	prom[ MS5607_M_CRC ] = crc_read;
 
 	return n_rem;
 
@@ -246,7 +246,7 @@ void b_initialize ( void )
 	b_load_cal ( );
 }
 
-void g_process ( void )
+void b_process ( void )
 {
 
 }
