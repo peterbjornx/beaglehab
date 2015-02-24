@@ -221,7 +221,9 @@ void b_load_cal ( void )
 	/* Verify it */
 	cserror( crc == crc_ex, 
 		 LOG_ERROR, 
-		 "Barometer calibration data CRC mismatch");
+		 "Barometer calibration data CRC mismatch: 0x%x expected: 0x%x",
+		 (int) crc,
+		 (int) crc_ex);
 
 	/* Load values */
 	b_psens_t1 = prom[ MS5607_M_C1 ];
