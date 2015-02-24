@@ -62,16 +62,16 @@
 #include "baro.h"
 
 /* Pressure sensitivity SENSt1 */
- int32_t b_psens_t1;
+ int64_t b_psens_t1;
 
 /* Pressure offset OFFt1 */
- int32_t b_poff_t1;
+ int64_t b_poff_t1;
 
 /* Temperature coefficient of pressure sensitivity TCS */
- int32_t b_tc_psens;
+ int64_t b_tc_psens;
 
 /* Temperature coefficient of pressure offset TCO */
- int32_t b_tc_poff;
+ int64_t b_tc_poff;
 
 /* Reference temperature Tref */
  int32_t b_tref;
@@ -232,10 +232,10 @@ void b_load_cal ( void )
 		 (int) crc_ex);
 
 	/* Load values */
-	b_psens_t1 = ( ( int32_t ) prom[ MS5607_M_C1 ] ) & 0x0000FFFF;
-	b_poff_t1  = ( ( int32_t ) prom[ MS5607_M_C2 ] ) & 0x0000FFFF;
-	b_tc_psens = ( ( int32_t ) prom[ MS5607_M_C3 ] ) & 0x0000FFFF;
-	b_tc_poff  = ( ( int32_t ) prom[ MS5607_M_C4 ] ) & 0x0000FFFF;
+	b_psens_t1 = (int64_t) ( ((int32_t) prom[ MS5607_M_C1 ] ) & 0x0000FFFF);
+	b_poff_t1  = (int64_t) ( ((int32_t) prom[ MS5607_M_C2 ] ) & 0x0000FFFF);
+	b_tc_psens = (int64_t) ( ((int32_t) prom[ MS5607_M_C3 ] ) & 0x0000FFFF);
+	b_tc_poff  = (int64_t) ( ((int32_t) prom[ MS5607_M_C4 ] ) & 0x0000FFFF);
 	b_tref     = ( ( int32_t ) prom[ MS5607_M_C5 ] ) & 0x0000FFFF;
 	b_tsens    = (int64_t) ( ((int32_t) prom[ MS5607_M_C6 ]) & 0x0000FFFF);
 
@@ -263,6 +263,10 @@ void b_process ( void )
 	 int64_t	b_temp;
 	 int64_t	p_off;
 	 int64_t	p_sens;
+	 int64_t	c_off  = 0;
+	 int64_t	c_sens = 0;
+	 int64_t	c_temp = 0;
+	 int64_t	b_pres;
 
 	/* Get measurements */
 	b_convert ( MS5607_CV_BARO_4K );
@@ -275,9 +279,39 @@ void b_process ( void )
 	d_temp = m_temp - ( b_tref << 8 ) ;
 	b_temp = 2000 + ((d_temp * b_tsens) >> (int64_t) 23);
 
+	/* Calculate pressure offset and sensitivity */
+	p_off  = ( b_poff_t1 << 17 )  + ( ( b_tc_poff  * d_temp ) >> 6 );
+	p_sens = ( b_psens_t1 << 16 ) + ( ( b_tc_psens * d_temp ) >> 7 );
+	
+	/* Handle nonlinearity */
+	if ( b_temp < 2000 ) {
+		/* Low temperature ( < 20*C ) */
+		c_temp = ( d_temp * d_temp ) >> 31;
+		c_off  = ( 61 * ( b_temp - 2000 ) * ( b_temp - 2000 ) ) >> 4;
+		c_sens =    2 * ( b_temp - 2000 ) * ( b_temp - 2000 );
+	} 
+	if ( b_temp < -1500 ) {
+		/* Very low temperature ( < -15*C ) */
+		c_off  +=  15 * ( b_temp + 1500 ) * ( b_temp + 1500 );
+		c_sens +=   8 * ( b_temp + 1500 ) * ( b_temp + 1500 );
+	}
+
+	/* Apply second order factors */
+	p_off  -= c_off;
+	p_sens -= c_sens;
+	b_temp -= c_temp;
+
+	/* Calculate pressure */
+	b_pres  = ( ( ( m_pres * p_sens ) >> 21 ) - p_off ) >> 15;
+
+	/* Calculate temperature and pressure as double */
 	b_temperature = ( (double) b_temp ) / 100.0;
+	b_pressure    = ( (double) b_pres ) / 100.0;
 
 	/* Log temperature */
-	cs_log( LOG_DEBUG, "Temperature reading: %f", b_temperature );
+	cs_log( LOG_DEBUG, 
+		"T: \t%f *C\t p: \t%f mbar", 
+		b_temperature, 
+		b_pressure );
  
 }
