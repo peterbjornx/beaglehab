@@ -144,8 +144,8 @@ int main( int argc, char **argv )
 		/* Reset watchdog timer */		
 		cswdog_reset_watchdog ( ) ;
 
-		/* Wait for 50 milliseconds */
-		usleep ( 50000 );		
+		/* Wait for 100 milliseconds */
+		usleep ( 100000 );		
 	
 	}
 
