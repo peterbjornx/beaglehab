@@ -179,7 +179,7 @@ void h_convert ( uint8_t command )
 		 strerror ( errno ) );
 
 	/* Wait for the humidity sensor to convert the value */
-	usleep(50000);
+	usleep(80000);
 
 }
 
