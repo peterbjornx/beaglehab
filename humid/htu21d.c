@@ -124,7 +124,7 @@ retry:
 					buffer,
 					3 );
 
-	if ( status >= 0 ) {
+	if ( status < 0 ) {
 		cs_log (
 		 LOG_WARN,
 		 "Failed to read humidity sensor ADC: %i(%s)",
@@ -179,7 +179,7 @@ void h_convert ( uint8_t command )
 		 strerror ( errno ) );
 
 	/* Wait for the humidity sensor to convert the value */
-	usleep(80000);
+	usleep(50000);
 
 }
 
