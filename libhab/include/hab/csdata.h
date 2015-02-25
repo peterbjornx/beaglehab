@@ -85,4 +85,10 @@ typedef struct {
 	double	temperature;
 } csproto_baro_t;
 
+typedef struct {
+	time_t	timestamp;
+	double	humidity;
+	double	temperature;
+} csproto_humidity_t;
+
 #endif
