@@ -18,21 +18,21 @@ NASMFLAGS = -w+orphan-labels -felf -g
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I./include
+INCLUDES = -I./include -I../libhab/include
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS = 
+LFLAGS = -L../libhab
 
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname 
 #   option, something like (this will link in libmylib.so and libm.so:
-LIBS = 
+LIBS = -lhab -lrt -lm
 
 # define the C source files
 SRCS = main.c \
-	util.c\
+	nav.c\
 	csproto.c\
 	csdata.c\
 	radio.c
@@ -49,7 +49,7 @@ OBJS = $(SRCS:.c=.o)
 all:	radiod
 
 radiod: $(OBJS)
-	$(LD) $(LFLAGS) $(LIBS) -o radiod $(OBJS)
+	$(LD) $(LFLAGS) -o radiod $(OBJS) $(LIBS)
 
 #install: init
 #	cp init $(INITRD_DIR)/sbin/init
