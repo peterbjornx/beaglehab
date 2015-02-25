@@ -91,4 +91,11 @@ typedef struct {
 	double	temperature;
 } csproto_humidity_t;
 
+typedef struct {
+	time_t	timestamp;
+	double	acc_x, acc_y, acc_z;
+	double	mag_x, mag_y, mag_z;
+	double	temperature;
+} csproto_acmm_t;
+
 #endif
