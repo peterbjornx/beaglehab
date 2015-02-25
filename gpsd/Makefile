@@ -11,31 +11,30 @@ LD = @echo " [  LD  ]	" $@ ; gcc
 
 NASM = @echo " [ NASM ]	" $< ; nasm
 
+PROGNAME = gpsd
+
 # define any compile-time flags
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g 
 
 NASMFLAGS = -w+orphan-labels -felf -g
 
 # define any directories containing header files other than /usr/include
 #
-INCLUDES = -I./include -I../nmealib/include
+INCLUDES = -I./include -I../libhab/include
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS = -L../nmealib/lib
+LFLAGS = -L../libhab
 
 # define any libraries to link into executable:
 #   if I want to link in libraries (libx.so or libx.a) I use the -llibname 
 #   option, something like (this will link in libmylib.so and libm.so:
-LIBS = -lm -lnmea
-
-MAIN = gpsd
+LIBS = -lhab -lrt
 
 # define the C source files
 SRCS = main.c \
-	util.c \
-	gps.c
+gps.c
 
 # define the C object files 
 #
@@ -46,20 +45,10 @@ SRCS = main.c \
 # with the .o suffix
 #
 OBJS = $(SRCS:.c=.o)
-all:	$(MAIN)
+all:	$(PROGNAME)
 
-$(MAIN): $(OBJS)
-	$(LD) $(LFLAGS) -o $(MAIN) $(OBJS) $(LIBS)
-
-#install: init
-#	cp init $(INITRD_DIR)/sbin/init
-
-
-#test_heapmm: $(OBJS) tests/test_heapmm.o
-#	$(CC) $(CFLAGS) $(INCLUDES) -o test_heapmm $(OBJS) tests/test_heapmm.o $(LFLAGS) $(LIBS)
-
-#test_physmm: $(OBJS) tests/test_physmm.o
-#	$(CC) $(CFLAGS) $(INCLUDES) -o test_physmm $(OBJS) tests/test_physmm.o $(LFLAGS) $(LIBS)
+$(PROGNAME): $(OBJS)
+	$(LD) $(LFLAGS) -o $(PROGNAME) $(OBJS) $(LIBS)
 
 .PHONY: depend clean
 

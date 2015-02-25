@@ -24,6 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <hab/cslog.h>
 #include "gpsd.h"
 
 FILE *gps_open(const char *path)
@@ -32,17 +33,17 @@ FILE *gps_open(const char *path)
 	FILE *str;
 	struct termios options;
 	
-	p_log(LOG_INFO, "Opening GPS TTY %s\n", path);
+	cs_log(LOG_INFO, "Opening GPS TTY %s\n", path);
 
 	fd = open(path, O_RDWR | O_NOCTTY | O_NDELAY);
 
 	if (fd == -1) {
-		p_log(LOG_ERROR, "Could not open TTY for GPS (%s): %s!\n", path, strerror(errno));
+		cs_log(LOG_ERROR, "Could not open TTY for GPS (%s): %s!\n", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 		
 	if (tcgetattr(fd, &options) == -1){
-		p_log(LOG_ERROR, "Could not get attributes for GPS TTY (%s): %s!\n", path, strerror(errno));
+		cs_log(LOG_ERROR, "Could not get attributes for GPS TTY (%s): %s!\n", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	
@@ -59,23 +60,23 @@ FILE *gps_open(const char *path)
 	options.c_cc[VTIME] = 0;
 		
 	if (tcsetattr(fd, TCSANOW, &options) == -1){
-		p_log(LOG_ERROR, "Could not set attributes for GPS TTY (%s): %s!\n", path, strerror(errno));
+		cs_log(LOG_ERROR, "Could not set attributes for GPS TTY (%s): %s!\n", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	str = fdopen(fd, "rb");
 
 	if (fcntl(fd, F_SETFL, 0) == -1){
-		p_log(LOG_ERROR, "Could not set FD flags for GPS TTY (%s): %s!\n", path, strerror(errno));
+		cs_log(LOG_ERROR, "Could not set FD flags for GPS TTY (%s): %s!\n", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
 	if (str == NULL) {
-		p_log(LOG_ERROR, "Could not open GPS TTY as file stream (%s): %s!\n", path, strerror(errno));
+		cs_log(LOG_ERROR, "Could not open GPS TTY as file stream (%s): %s!\n", path, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	p_log(LOG_INFO, "Opened GPS TTY\n");
+	cs_log(LOG_INFO, "Opened GPS TTY\n");
 	
 	return str;
 }
@@ -88,7 +89,7 @@ size_t	gps_read_sentence(FILE *gps, char *buffer, size_t buffer_size)
 	buffer_size--;
 	for (ptr = 0; ptr < buffer_size; ptr++) {
 		if (fread(&inbuf, 1, 1, gps) != 1) {
-			p_log(LOG_ERROR, "Could not read from GPS TTY: %s!\n", strerror(errno));
+			cs_log(LOG_ERROR, "Could not read from GPS TTY: %s!\n", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		buffer[ptr] = inbuf;

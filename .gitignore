@@ -3,6 +3,7 @@ gpsd/gpsd
 radiod/radiod
 watchdogd/watchdogd
 gyrod/gyrod
+barod/barod
 *.a
 *~
 clitest
