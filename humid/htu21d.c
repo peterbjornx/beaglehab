@@ -154,7 +154,7 @@ retry:
 		 errno,
 		 strerror ( errno ) );
 		if (rtctr == 10) {
-			h_reset();
+			//h_reset();
 			return 0xFFFFFFFF;
 		}
 		rtctr++;
