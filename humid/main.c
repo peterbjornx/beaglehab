@@ -145,7 +145,7 @@ int main( int argc, char **argv )
 		cswdog_reset_watchdog ( ) ;
 
 		/* Wait for 100 milliseconds */
-		usleep ( 100000 );		
+		usleep ( 1000000 );		
 	
 	}
 
