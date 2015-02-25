@@ -130,7 +130,7 @@ retry:
 		 "Failed to read humidity sensor ADC: %i(%s)",
 		 errno,
 		 strerror ( errno ) );
-		goto retry:
+		goto retry;
 	}
 
 	//TODO: Verify CRC
