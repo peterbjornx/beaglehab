@@ -178,14 +178,16 @@ void h_convert ( uint8_t command )
 					NULL,
 					0 );
 
-	cserror( status >= 0,
-		 LOG_ERROR,
+	if ( status < 0 ) {
+		cs_log (
+		 LOG_WARN,
 		 "Failed to measure humidity sensor value: %i(%s)",
 		 errno,
 		 strerror ( errno ) );
-
-	/* Wait for the humidity sensor to convert the value */
-	usleep(50000);
+	} else {
+		/* Wait for the humidity sensor to convert the value */
+		usleep(50000);
+	}
 
 }
 
