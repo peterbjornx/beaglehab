@@ -111,34 +111,6 @@ void h_write_reg ( uint8_t value )
 
 }
 
-uint32_t h_read_adc ( void )
-{
-	uint8_t		buffer[3];
-	int 		status;
-
-retry:
-
-	/* Do an I2C read on the register */
-	status = csi2c_read_device(	humid_sensor_bus, 
-					HTU21D_ADDR, 
-					buffer,
-					3 );
-
-	if ( status < 0 ) {
-		cs_log (
-		 LOG_WARN,
-		 "Failed to read humidity sensor ADC: %i(%s)",
-		 errno,
-		 strerror ( errno ) );
-		goto retry;
-	}
-
-	//TODO: Verify CRC
-
-	return (buffer[0] << 8) | buffer[1];
-
-}
-
 void h_reset ( void )
 {
 	int 		status;
@@ -158,6 +130,40 @@ void h_reset ( void )
 
 	/* Wait for the humidity sensor to boot */
 	usleep(20000);
+
+}
+
+uint32_t h_read_adc ( void )
+{
+	uint8_t		buffer[3];
+	int 		status;
+	int		rtctr = 0;
+
+retry:
+
+	/* Do an I2C read on the register */
+	status = csi2c_read_device(	humid_sensor_bus, 
+					HTU21D_ADDR, 
+					buffer,
+					3 );
+
+	if ( status < 0 ) {
+		cs_log (
+		 LOG_WARN,
+		 "Failed to read humidity sensor ADC: %i(%s)",
+		 errno,
+		 strerror ( errno ) );
+		if (rtctr == 10) {
+			h_reset();
+			return 0xFFFFFFFF;
+		}
+		rtctr++;
+		goto retry;
+	}
+
+	//TODO: Verify CRC
+
+	return (buffer[0] << 8) | buffer[1];
 
 }
 
@@ -196,20 +202,34 @@ void h_process ( void )
 	
 	uint32_t m_temp;
 	uint32_t m_humid;
+	
+	rt1:
+
 	/* Start conversion of temperature */
 	h_convert ( HTU21D_TRIG_TEMP_RB );
 
 	/* Read result */
-	m_temp = h_read_adc() & 0xFFFC;
+	m_temp = h_read_adc();
+
+	if (m_temp == 0xFFFFFFFF)
+		goto rt1;
 
 	/* Wait for the humidity sensor to recover */
-	usleep(1000);
+	usleep(3000);
+
+	rt2:
 
 	/* Start conversion of humidity */
 	h_convert ( HTU21D_TRIG_TEMP_RB );
 
 	/* Read result */
-	m_humid = h_read_adc() & 0xFFFC;
+	m_humid = h_read_adc();
+
+	if (m_humid == 0xFFFFFFFF)
+		goto rt2;
+
+	m_temp  &= 0xFFFC;
+	m_humid &= 0xFFFC;
 
 	/* Calculate temperature and pressure as double */
 	h_temperature = (((double) m_temp ) / 65536.0) * 175.72 - 46.85;
