@@ -197,6 +197,9 @@ void h_process ( void )
 	/* Read result */
 	m_temp = h_read_adc() & 0xFFFC;
 
+	/* Wait for the humidity sensor to recover */
+	usleep(10000);
+
 	/* Start conversion of humidity */
 	h_convert ( HTU21D_TRIG_TEMP_RB );
 
