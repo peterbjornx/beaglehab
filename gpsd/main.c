@@ -24,15 +24,17 @@
 #include <string.h>
 #include <errno.h>
 #include <nmea/nmea.h>
-#include <unistd.h>
-
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/shm.h>
 #include <math.h>
 
-csproto_gps_t *gpsblock;
+/*
+ * We need hab/csipc for the libhab IPC system
+ */
+#include <hab/csipc.h>
+
+/*
+ * We need hab/cswdog for the watchdog reset function
+ */
+#include <hab/cswdog.h>
 
 void nmealib_trace(const char *str, int str_size)
 {
@@ -57,34 +59,85 @@ nmeaPARSER parser;
 
 char	sentence_buffer[128];
 
+cs_srv_t	*gpsd_ipc_server;
+csproto_gps_t	*gpsd_packet;
+
+void usage ( const char *reason )
+{
+	fprintf( stderr, 
+		 "Syntax error: %s\nUsage: gpsd\n",
+		 reason );
+	exit ( EXIT_FAILURE );
+}
+
 int main( int argc, char **argv ) 
 {
-	/* Not really a daemon... */
-	int id = 0, size;
+	time_t now;
+	FILE *gps;
+	int size;
 
-	FILE *gps = gps_open("/dev/ttyO2");
+	/* Validate arguments */
+	if ( argc != 1 )
+		usage ( "argument count" );
 
+	/* Initialize watchdog client */
+	cswdog_initialize ( );
+
+	/* Perform an initial watchdog reset */
+	cswdog_reset_watchdog ( );
+
+	/* Open the gps receiver */
+	gps = gps_open("/dev/ttyO2");
+
+	/* Initialize NMEA parser library */
 	nmea_property()->trace_func = &nmealib_trace;
 	nmea_property()->error_func = &nmealib_error;
 
 	nmea_zero_INFO(&info);
 	nmea_parser_init(&parser);
 
+	/* Initialize the IPC library */
+	csipc_set_program ( "gpsd" );	
+
+	/* Create IPC server */
+	gpsd_ipc_server = csipc_create_server ( "gpsd", 
+						 sizeof( csproto_gps_t ),
+						 10 );
+
+	/* Set buffer pointer */
+	gpsd_packet = ( csproto_gps_t * ) gpsd_ipc_server->pl_buffer;
+
+
 	for (;;) {
 
+		/* Read next sentence from the GPS receiver */
 		size = gps_read_sentence(gps, sentence_buffer, 128);
 
+		/* Parse it using NMEALIB */
 		nmea_parse(&parser, sentence_buffer, size, &info);
 
-		cs_log(LOG_INFO, " lat: %f lon: %f alt:%f vel: %f head:%f\n", info.lat, info.lon, info.elv, info.speed, info.direction);
+		/* Log the data */
+		cs_log(LOG_DEBUG, " lat: %f lon: %f alt:%f vel: %f head:%f\n",
+			info.lat, 
+			info.lon, 
+			info.elv, 
+			info.speed, 
+			info.direction);
 
-		gpsblock->lat_degrees = floor(info.lat / 100.0);
-		gpsblock->lat_minutes = fmod(info.lat,100.0);
-		gpsblock->long_degrees = floor(info.lon / 100.0);
-		gpsblock->long_minutes = fmod(info.lon,100.0);
-		gpsblock->velocity = info.speed / 3.6;
-		gpsblock->altitude = info.elv;
-		gpsblock->heading = info.direction;
+		/* Update IPC data */
+		gpsd_packet->lat_degrees = floor(info.lat / 100.0);
+		gpsd_packet->lat_minutes = fmod(info.lat,100.0);
+		gpsd_packet->long_degrees = floor(info.lon / 100.0);
+		gpsd_packet->long_minutes = fmod(info.lon,100.0);
+		gpsd_packet->velocity = info.speed / 3.6;
+		gpsd_packet->altitude = info.elv;
+		gpsd_packet->heading = info.direction;
+
+		/* Process IPC */
+		csipc_server_process ( gpsd_ipc_server );
+
+		/* Reset watchdog timer */		
+		cswdog_reset_watchdog ( ) ;
 		
 	}
 }
