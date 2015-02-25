@@ -116,17 +116,22 @@ uint32_t h_read_adc ( void )
 	uint8_t		buffer[3];
 	int 		status;
 
+retry:
+
 	/* Do an I2C read on the register */
 	status = csi2c_read_device(	humid_sensor_bus, 
 					HTU21D_ADDR, 
 					buffer,
 					3 );
 
-	cserror( status >= 0,
-		 LOG_ERROR,
+	if ( status >= 0 ) {
+		cs_log (
+		 LOG_WARN,
 		 "Failed to read humidity sensor ADC: %i(%s)",
 		 errno,
 		 strerror ( errno ) );
+		goto retry:
+	}
 
 	//TODO: Verify CRC
 
@@ -174,7 +179,7 @@ void h_convert ( uint8_t command )
 		 strerror ( errno ) );
 
 	/* Wait for the humidity sensor to convert the value */
-	usleep(60000);
+	usleep(50000);
 
 }
 
@@ -198,7 +203,7 @@ void h_process ( void )
 	m_temp = h_read_adc() & 0xFFFC;
 
 	/* Wait for the humidity sensor to recover */
-	usleep(10000);
+	usleep(1000);
 
 	/* Start conversion of humidity */
 	h_convert ( HTU21D_TRIG_TEMP_RB );
