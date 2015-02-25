@@ -194,5 +194,32 @@ int	csi2c_read_register( 	csi2c_bus_t *bus,
 
 }
 
+int	csi2c_read_device( 	csi2c_bus_t *bus,
+				long 	 slave_addr, 
+				void 	*buffer,
+				size_t	 size )
+{
+	struct i2c_msg			tr_queue[2];
+	struct i2c_rdwr_ioctl_data	tr_desc;
+
+	/* Check for NULL pointers */
+	csassert( bus != NULL );
+	csassert( ( size != 0 ) && ( buffer != NULL ) );
+
+	/* Setup transaction descriptor */
+	tr_desc.msgs	  = tr_queue;
+	tr_desc.nmsgs	  = 1;	
+
+	/* Setup message descriptor for the data packet */
+	tr_queue[0].addr  = ( __u16 ) slave_addr;
+	tr_queue[0].flags = ( __u16 ) I2C_M_RD;
+	tr_queue[0].len	  = ( __u16 ) size; 
+	tr_queue[0].buf	  = ( __u8 *) buffer;
+
+	/* Execute the transaction */
+	return ioctl ( bus->dev_fd, I2C_RDWR, &tr_desc );		
+
+}
+
 
 

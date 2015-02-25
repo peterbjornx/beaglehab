@@ -58,6 +58,11 @@ int	csi2c_read_register ( 	csi2c_bus_t *bus,
 				void 	*buffer,
 				size_t	 size );
 
+int	csi2c_read_device( 	csi2c_bus_t *bus,
+				long 	 slave_addr, 
+				void 	*buffer,
+				size_t	 size );
+
 #endif
 
 
