@@ -41,7 +41,7 @@ radio_payload_enc_t	payloadenc[] = {imu_payload_enc_gyr,
 
 int main( int argc, char **argv ) 
 {
-	int payload_ctr;
+	int payload_ctr = 0;
 	FILE *radio = radio_open("/dev/ttyO4");
 
 	csipc_set_program( "radiod" );
