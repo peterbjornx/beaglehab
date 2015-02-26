@@ -4,6 +4,7 @@ radiod/radiod
 watchdogd/watchdogd
 gyrod/gyrod
 barod/barod
+humid/humid
 *.a
 *~
 clitest
