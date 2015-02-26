@@ -544,8 +544,8 @@ void csipc_client_process( cs_chan_t *channel )
 		strcpy ( channel->ch_announce->pl_buffer, csipc_listener_name );
 	
 		if ( ! csipc_int_write_channel ( channel->ch_announce ) ) {
-			cs_log_fatal(	LOG_ERROR, 
-		"Failed to write to announce channel ( for reannounce )" );
+			cs_log(	LOG_ERROR, 
+				"Failed to write to announce channel ( for reannounce )" );
 		}
 
 	}
