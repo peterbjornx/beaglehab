@@ -2,9 +2,8 @@
 
 clear
 echo BeagleHAB Platform v0.01 by Peter Bosch
-echo BeagleHAB is Free and Open Source Software licensed under the GPLv3 and was created \
-as an
-echo assignment for Bataafs Lyceum ( Hengelo, The Netherlands ).
+echo BeagleHAB is Free and Open Source Software licensed under the GPLv3 and was created as
+echo "an assignment for Bataafs Lyceum ( Hengelo, The Netherlands )."
 
 echo 
 echo -n Initializing BeagleBone pin map...
@@ -14,5 +13,11 @@ echo BB-UART2 > /sys/devices/bone_capemgr.9/slots
 
 #Add UART4 overlay (RTTY Output)
 echo BB-UART4 > /sys/devices/bone_capemgr.9/slots
+
+echo OK
+
+echo -n Preparing watchdog timer reset channel...
+
+touch /var/run/cswdog
 
 echo OK
