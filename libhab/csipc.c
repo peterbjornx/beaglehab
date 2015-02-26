@@ -452,8 +452,11 @@ cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
 					     msg_size, 
 					     max_msg );
 
-	channel->ch_announce = csipc_int_open_channel ( name, 
-					CS_SES_ANNOUNCE );
+	channel->ch_announce = csipc_int_create_channel (name, 
+							CS_SES_ANNOUNCE,
+							CSIPC_ANNOUNCE_SIZE,
+							CSIPC_ANNOUNCE_MAXMSG);
+	
 	
 	strcpy ( channel->ch_announce->pl_buffer, csipc_listener_name );
 	
@@ -545,7 +548,7 @@ void csipc_client_process( cs_chan_t *channel )
 	
 		if ( ! csipc_int_write_channel ( channel->ch_announce ) ) {
 			cs_log(	LOG_ERROR, 
-				"Failed to write to announce channel ( for reannounce )" );
+		"Failed to write to announce channel ( for reannounce )" );
 		}
 
 	}
