@@ -52,6 +52,8 @@ int main( int argc, char **argv )
 
 	imu_initialize ( );
 
+	ath_initialize ( );
+
 	telemetry.lat_degrees  = 52.0;
 	telemetry.lat_minutes  = 16.0 + 24.523/60.0;
 	telemetry.long_degrees =  6.0;
