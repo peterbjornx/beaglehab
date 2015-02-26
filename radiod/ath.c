@@ -80,12 +80,14 @@ uint8_t ath_payload_enc ( uint8_t *payload )
 	csproto_payload_ath_t	*pkt = (csproto_payload_ath_t *) payload;
 	csipc_client_process ( baro_chan );
 	csipc_client_process ( humid_chan );
+	baro_data = ( csproto_baro_t * ) baro_chan->pl_buffer;
+	humid_data = ( csproto_humidity_t * ) humid_chan->pl_buffer;
 
 	pkt->pressure = (uint16_t) (baro_data->pressure / CS_PRESSURE_SCALE);
 	pkt->temperature = (uint16_t) ((baro_data->temperature 
-			/ CS_TEMPERATURE_SCALE) + CS_TEMPERATURE_OFFSET);
+			+ CS_TEMPERATURE_OFFSET) / CS_TEMPERATURE_SCALE);
 	pkt->humidity = (uint16_t) ((humid_data->humidity
-			/ CS_HUMIDITY_SCALE) + CS_HUMIDITY_OFFSET);
+			+ CS_HUMIDITY_OFFSET) / CS_HUMIDITY_SCALE);
 
 	return CS_PAYLOAD_ATH;
 }
