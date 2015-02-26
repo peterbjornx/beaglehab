@@ -121,7 +121,7 @@ typedef struct cspl_mag csproto_payload_mag_t;
 	uint16_t	humidity;
 } __attribute__((packed));
 
-typedef struct cspl_mag csproto_payload_ath_t;
+typedef struct cspl_ath csproto_payload_ath_t;
 
 void		csproto_prepare	( csproto_packet_t *packet );
 

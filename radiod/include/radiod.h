@@ -41,5 +41,8 @@ uint8_t imu_payload_enc_mag ( uint8_t *payload );
 
 uint8_t imu_payload_enc_gyr ( uint8_t *payload );
 
+void ath_initialize ( void );
+
+uint8_t ath_payload_enc ( uint8_t *payload );
 
 #endif

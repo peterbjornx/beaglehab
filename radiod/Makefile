@@ -34,6 +34,7 @@ LIBS = -lhab -lrt -lm
 SRCS = main.c \
 	nav.c\
 	imu.c\
+	ath.c\
 	csproto.c\
 	csdata.c\
 	radio.c

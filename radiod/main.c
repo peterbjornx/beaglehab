@@ -35,7 +35,9 @@ csproto_telemetry_t	telemetry;
 
 #define PAYLOAD_COUNT	3
 
-radio_payload_enc_t	payloadenc[] = {imu_payload_enc_gyr,imu_payload_enc_mag};
+radio_payload_enc_t	payloadenc[] = {imu_payload_enc_gyr,
+					imu_payload_enc_mag,
+					ath_payload_enc};
 
 int main( int argc, char **argv ) 
 {
