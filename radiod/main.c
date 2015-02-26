@@ -78,7 +78,8 @@ int main( int argc, char **argv )
 		pakketje.payload_id = 
 			payloadenc[ payload_ctr++ ]( pakketje.payload_data );
 
-		payload_ctr %= PAYLOAD_COUNT;
+		if (payload_ctr > 2)
+			payload_ctr = 0;
 
 		csproto_prepare(&pakketje);
 
