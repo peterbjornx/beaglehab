@@ -133,6 +133,12 @@ int main( int argc, char **argv )
 		/* Process new sensor data */
 		b_process ( );
 
+		/* Log temperature */
+		cs_log( LOG_DEBUG, 
+			"T: \t%f *C\t p: \t%f mbar", 
+			b_temperature, 
+			b_pressure );
+
 		/* Encode new data */
 		barod_packet->timestamp	  = now;
 		barod_packet->pressure	  = b_pressure;

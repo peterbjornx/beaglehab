@@ -307,11 +307,5 @@ void b_process ( void )
 	/* Calculate temperature and pressure as double */
 	b_temperature = ( (double) b_temp ) / 100.0;
 	b_pressure    = ( (double) b_pres ) / 100.0;
-
-	/* Log temperature */
-	cs_log( LOG_DEBUG, 
-		"T: \t%f *C\t p: \t%f mbar", 
-		b_temperature, 
-		b_pressure );
  
 }
