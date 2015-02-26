@@ -21,6 +21,8 @@
 #include "csproto.h"
 #include <hab/csdata.h>
 
+typedef uint8_t (*radio_payload_enc_t)( uint8_t *payload_buffer );
+
 FILE *radio_open(const char *path);
 
 void radio_send(FILE *radio, csproto_packet_t *packet);
@@ -30,5 +32,14 @@ void radio_printf(FILE *radio, const char *format, ...) ;
 void nav_telemetry_update ( csproto_telemetry_t *telemetry );
 
 void nav_initialize ( void );
+
+void imu_initialize ( void );
+
+void imu_telemetry_update ( csproto_telemetry_t *telemetry );
+
+uint8_t imu_payload_enc_mag ( uint8_t *payload );
+
+uint8_t imu_payload_enc_gyr ( uint8_t *payload );
+
 
 #endif

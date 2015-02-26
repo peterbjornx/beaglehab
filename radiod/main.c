@@ -33,10 +33,13 @@
 csproto_packet_t 	pakketje;
 csproto_telemetry_t	telemetry;
 
+#define PAYLOAD_COUNT	3
+
+radio_payload_enc_t	payloadenc[] = {imu_payload_enc_gyr,imu_payload_enc_mag};
+
 int main( int argc, char **argv ) 
 {
-	/* Not really a daemon... */
-	int id = 0;
+	int payload_ctr;
 	FILE *radio = radio_open("/dev/ttyO4");
 
 	csipc_set_program( "radiod" );
@@ -44,6 +47,8 @@ int main( int argc, char **argv )
 	cswdog_initialize ( ) ;
 	
 	nav_initialize ( );
+
+	imu_initialize ( );
 
 	telemetry.lat_degrees  = 52.0;
 	telemetry.lat_minutes  = 16.0 + 24.523/60.0;
@@ -57,23 +62,29 @@ int main( int argc, char **argv )
 	telemetry.acc_z	       = 0;
 
 	for (;;) {
+	
+/* Telemetry main packet updaters go here */
 
 		nav_telemetry_update ( &telemetry );
 
+		imu_telemetry_update ( &telemetry );
+
+/* -------------------------------------- */
+
 		csproto_encode_telemetry(&pakketje, &telemetry);
+
+		pakketje.payload_id = 
+			payloadenc[ payload_ctr++ ]( pakketje.payload_data );
+
+		payload_ctr %= PAYLOAD_COUNT;
 
 		csproto_prepare(&pakketje);
 
 		radio_send(radio, &pakketje);
 
-		pakketje.payload_id = id;
-
 		cs_log(LOG_TRACE, "Transmitting packet with telemetry data: LN:%f LT:%f\n", telemetry.lat_degrees, telemetry.long_degrees);
 
 		cswdog_reset_watchdog ( );
-	
-		id++;
-		id &= 3;
 		
 	}
 }

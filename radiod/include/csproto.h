@@ -44,6 +44,28 @@
 #define CS_PREAMBLE_H	(0x55)
 
 /**
+ * These constants are used to identify payload packets
+ */
+
+#define CS_PAYLOAD_GYR	(0x00)
+#define CS_PAYLOAD_NAV	(0x01)
+#define CS_PAYLOAD_ATH	(0x02)
+#define CS_PAYLOAD_MAG	(0x03)
+
+/**
+ * These constants determine the scale of the payload fields
+ */
+#define CS_MAGNETIC_SCALE	(1024.0 / 65536.0)
+#define CS_MAGNETIC_OFFSET	(512.0)
+#define CS_GYROSCOPE_SCALE	(2000.0 / 65536.0)
+#define CS_GYROSCOPE_OFFSET	(1000.0)
+#define CS_PRESSURE_SCALE	(1200.0 / 65536.0)
+#define CS_TEMPERATURE_SCALE	(200.0 / 65536.0)
+#define CS_TEMPERATURE_OFFSET	(100.0)
+#define CS_HUMIDITY_SCALE	(140.0 / 65536.0)
+#define CS_HUMIDITY_OFFSET	(20.0)
+
+/**
  * 
  */
 #include <hab/csdata.h> 
@@ -74,6 +96,32 @@
 } __attribute__((packed));
 
 typedef struct cspd csproto_packet_t;
+
+typedef struct cspd csproto_packet_t;
+
+ struct cspl_gyr {
+	uint16_t	gyr_x;
+	uint16_t	gyr_y;
+	uint16_t	gyr_z;
+} __attribute__((packed));
+
+typedef struct cspl_gyr csproto_payload_gyr_t;
+
+ struct cspl_mag {
+	uint16_t	mag_x;
+	uint16_t	mag_y;
+	uint16_t	mag_z;
+} __attribute__((packed));
+
+typedef struct cspl_mag csproto_payload_mag_t;
+
+ struct cspl_ath {
+	uint16_t	temperature;
+	uint16_t	pressure;
+	uint16_t	humidity;
+} __attribute__((packed));
+
+typedef struct cspl_mag csproto_payload_ath_t;
 
 void		csproto_prepare	( csproto_packet_t *packet );
 

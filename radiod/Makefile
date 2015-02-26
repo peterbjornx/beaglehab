@@ -33,6 +33,7 @@ LIBS = -lhab -lrt -lm
 # define the C source files
 SRCS = main.c \
 	nav.c\
+	imu.c\
 	csproto.c\
 	csdata.c\
 	radio.c
