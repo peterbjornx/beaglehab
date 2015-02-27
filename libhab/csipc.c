@@ -463,7 +463,7 @@ cs_chan_t *csipc_open_channel( const char *name, size_t msg_size, int max_msg )
 	if ( csipc_int_write_channel ( channel->ch_announce ) ) {
 		return channel;		
 	} else {
-		cs_log_fatal(	LOG_ERROR, 
+		cs_log(	LOG_ERROR, 
 				"Failed to write to announce channel" );
 		return channel;
 	}

@@ -84,7 +84,7 @@ char *log_levels[LOG_MAX + 1] = {
 /**
  * The minimum log level displayed by the software
  */
-int cs_log_level = LOG_TRACE;
+int cs_log_level = LOG_INFO;
 
 /**
  * @brief Set the minimum log level
